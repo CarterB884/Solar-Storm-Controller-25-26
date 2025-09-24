@@ -160,6 +160,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             backRightPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad
             */
 
+
             // Send calculated power to wheels
 //            frontLeftDrive.setPower(frontLeftPower);
             frontRightDrive.setPower(frontRightPower);
