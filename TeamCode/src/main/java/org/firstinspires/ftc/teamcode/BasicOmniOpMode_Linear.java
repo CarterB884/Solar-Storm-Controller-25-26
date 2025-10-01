@@ -65,7 +65,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
-//@Disabled
+@Disabled
 public class BasicOmniOpMode_Linear extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
@@ -74,18 +74,20 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotor backLeftDrive = null;
     private DcMotor frontRightDrive = null;
     private DcMotor backRightDrive = null;
-    private DcMotor shootermotor = null;
+    private DcMotor shooterLeft = null;
+    private DcMotor shooterRight = null;
 
     @Override
     public void runOpMode() {
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-//        frontLeftDrive = hardwareMap.get(DcMotor.class, "fl");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "fl");
         backLeftDrive = hardwareMap.get(DcMotor.class, "bl");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "fr");
+       frontRightDrive = hardwareMap.get(DcMotor.class, "fr");
         backRightDrive = hardwareMap.get(DcMotor.class, "br");
-        shootermotor = hardwareMap.get(DcMotor.class, "shoot");
+        shooterLeft = hardwareMap.get(DcMotor.class, "shootl");
+        shooterRight = hardwareMap.get(DcMotor.class, "shootr");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -97,11 +99,12 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         // when you first test your robot, push the left joystick forward and observe the direction the wheels turn.
         // Reverse the direction (flip FORWARD <-> REVERSE ) of any wheel that runs backward
         // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
-//        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        shootermotor.setDirection(DcMotor.Direction.FORWARD);
+        shooterLeft.setDirection(DcMotor.Direction.FORWARD);
+        shooterRight.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -128,7 +131,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             double shooterPower = 0;
 
             if (gamepad1.a) {
-                shooterPower = 0.5;
+                shooterPower = 1;
             }
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -162,15 +165,16 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
 
             // Send calculated power to wheels
-//            frontLeftDrive.setPower(frontLeftPower);
+            frontLeftDrive.setPower(frontLeftPower);
             frontRightDrive.setPower(frontRightPower);
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
-            shootermotor.setPower(shooterPower);
+            shooterLeft.setPower(shooterPower);
+            shooterRight.setPower(shooterPower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-//            telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
+            telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
             telemetry.update();
 
