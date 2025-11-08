@@ -77,6 +77,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotor backRightDrive = null;
     private DcMotor shooter = null;
     private double csp = 0.0;
+    private DcMotor intake = null;
     private Gamepad prevpad1 = gamepad1;
     private Gamepad prevpad2 = gamepad2;
 
@@ -90,6 +91,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
        frontRightDrive = hardwareMap.get(DcMotor.class, "fr");
         backRightDrive = hardwareMap.get(DcMotor.class, "br");
         shooter = hardwareMap.get(DcMotor.class, "shoot");
+        intake = hardwareMap.get(DcMotor.class, "in");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -106,6 +108,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
         shooter.setDirection(DcMotor.Direction.REVERSE);
+        intake.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -130,8 +133,13 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             double backLeftPower   = axial - lateral + yaw;
             double backRightPower  = axial + lateral - yaw;
             double shooterPower = 0;
+            double intakePower = 0;
 
-            if (gamepad1.a && !prevpad1.a) {
+
+            if (gamepad1.b) {
+                intakePower = 1;
+            }
+            if (gamepad1.a) {
                 shooterPower = csp;
             }
             if (gamepad1.dpad_down && !prevpad1.a) {
@@ -181,6 +189,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
             shooter.setPower(shooterPower);
+            intake.setPower(intakePower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
