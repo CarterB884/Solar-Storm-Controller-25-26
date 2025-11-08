@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /*
@@ -64,7 +65,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
+@TeleOp(name="Basic: Motor Code", group="Linear OpMode")
 @Disabled
 public class BasicOmniOpMode_Linear extends LinearOpMode {
 
@@ -74,8 +75,10 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotor backLeftDrive = null;
     private DcMotor frontRightDrive = null;
     private DcMotor backRightDrive = null;
-    private DcMotor shooterLeft = null;
-    private DcMotor shooterRight = null;
+    private DcMotor shooter = null;
+    private double csp = 0.0;
+    private Gamepad prevpad1 = gamepad1;
+    private Gamepad prevpad2 = gamepad2;
 
     @Override
     public void runOpMode() {
@@ -86,8 +89,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         backLeftDrive = hardwareMap.get(DcMotor.class, "bl");
        frontRightDrive = hardwareMap.get(DcMotor.class, "fr");
         backRightDrive = hardwareMap.get(DcMotor.class, "br");
-        shooterLeft = hardwareMap.get(DcMotor.class, "shootl");
-        shooterRight = hardwareMap.get(DcMotor.class, "shootr");
+        shooter = hardwareMap.get(DcMotor.class, "shoot");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -103,8 +105,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        shooterLeft.setDirection(DcMotor.Direction.FORWARD);
-        shooterRight.setDirection(DcMotor.Direction.REVERSE);
+        shooter.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -130,8 +131,18 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             double backRightPower  = axial + lateral - yaw;
             double shooterPower = 0;
 
-            if (gamepad1.a) {
-                shooterPower = 1;
+            if (gamepad1.a && !prevpad1.a) {
+                shooterPower = csp;
+            }
+            if (gamepad1.dpad_down && !prevpad1.a) {
+                if (csp > 0) {
+                    csp = csp - 0.1;
+                }
+            }
+            if (gamepad1.dpad_up && !prevpad2.a) {
+                if (csp < 1) {
+                    csp = csp + 0.1;
+                }
             }
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -169,14 +180,17 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             frontRightDrive.setPower(frontRightPower);
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
-            shooterLeft.setPower(shooterPower);
-            shooterRight.setPower(shooterPower);
+            shooter.setPower(shooterPower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
+            telemetry.addData("Current Shooter power", csp);
             telemetry.update();
+
+            prevpad1 = gamepad1;
+            prevpad2 = gamepad2;
 
         }
     }}
