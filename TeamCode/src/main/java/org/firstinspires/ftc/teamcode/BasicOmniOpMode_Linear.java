@@ -66,7 +66,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @TeleOp(name="Basic: Motor Code", group="Linear OpMode")
-@Disabled
+//@Disabled
 public class BasicOmniOpMode_Linear extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors. d
@@ -181,6 +181,21 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             frontRightPower = gamepad1.y ? 1.0 : 0.0;  // Y gamepad
             backRightPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad
             */
+
+            if (gamepad1.x) {
+                frontLeftPower = 1;
+            }
+            else if (gamepad1.y) {
+                frontRightPower = 1;
+            }
+            else if (gamepad1.b) {
+                backRightPower = 1;
+            }
+            else if (gamepad1.a) {
+                backLeftPower = 1;
+            }
+
+
 
 
             // Send calculated power to wheels
