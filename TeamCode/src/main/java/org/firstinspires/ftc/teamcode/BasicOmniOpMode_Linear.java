@@ -65,8 +65,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Motor Code")
-//disabled
+@TeleOp(name="Basic: Motor Code", group="Linear OpMode")
+//@Disabled
 public class BasicOmniOpMode_Linear extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors. d
@@ -76,13 +76,10 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotor frontRightDrive = null;
     private DcMotor backRightDrive = null;
     private DcMotor shooter = null;
-    private DcMotor elevator = null;
     private double csp = 0.0;
     private DcMotor intake = null;
-    private Gamepad prevpad1 = new Gamepad();
-    private Gamepad prevpad2 = new Gamepad();
-    private Gamepad curpad1 = new Gamepad();
-    private Gamepad curpad2 = new Gamepad();
+    private Gamepad prevpad1 = gamepad1;
+    private Gamepad prevpad2 = gamepad2;
 
     @Override
     public void runOpMode() {
@@ -95,7 +92,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "br");
         shooter = hardwareMap.get(DcMotor.class, "shoot");
         intake = hardwareMap.get(DcMotor.class, "in");
-        elevator = hardwareMap.get(DcMotor.class, "lift");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -109,11 +105,10 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        backRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
         shooter.setDirection(DcMotor.Direction.REVERSE);
         intake.setDirection(DcMotor.Direction.REVERSE);
-        elevator.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -124,11 +119,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            prevpad1.copy(curpad1);
-            prevpad2.copy(curpad2);
-            curpad1.copy(gamepad1);
-            curpad2.copy(gamepad2);
-
             double max;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
@@ -144,8 +134,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             double backRightPower  = axial + lateral - yaw;
             double shooterPower = 0;
             double intakePower = 0;
-            double elevatorPower = 1;
-
 
 
             if (gamepad1.b) {
@@ -154,12 +142,12 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             if (gamepad1.a) {
                 shooterPower = csp;
             }
-            if (curpad1.dpad_down && !prevpad1.dpad_down) {
+            if (gamepad1.dpad_down && !prevpad1.a) {
                 if (csp > 0) {
                     csp = csp - 0.1;
                 }
             }
-            if (curpad1.dpad_up && !prevpad1.dpad_up) {
+            if (gamepad1.dpad_up && !prevpad2.a) {
                 if (csp < 1) {
                     csp = csp + 0.1;
                 }
@@ -194,6 +182,21 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             backRightPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad
             */
 
+            if (gamepad1.x) {
+                frontLeftPower = 1;
+            }
+            else if (gamepad1.y) {
+                frontRightPower = 1;
+            }
+            else if (gamepad1.b) {
+                backRightPower = 1;
+            }
+            else if (gamepad1.a) {
+                backLeftPower = 1;
+            }
+
+
+
 
             // Send calculated power to wheels
             frontLeftDrive.setPower(frontLeftPower);
@@ -202,7 +205,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             backRightDrive.setPower(backRightPower);
             shooter.setPower(shooterPower);
             intake.setPower(intakePower);
-            elevator.setPower(elevatorPower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -211,7 +213,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             telemetry.addData("Current Shooter power", csp);
             telemetry.update();
 
-
+            prevpad1 = gamepad1;
+            prevpad2 = gamepad2;
 
         }
     }}
