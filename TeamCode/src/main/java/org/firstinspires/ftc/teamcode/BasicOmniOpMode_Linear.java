@@ -34,6 +34,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -76,27 +77,36 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors. d
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor frontLeftDrive = null;
-    private DcMotor backLeftDrive = null;
-    private DcMotor frontRightDrive = null;
-    private DcMotor backRightDrive = null;
+//    private DcMotor frontLeftDrive = null;
+//    private DcMotor backLeftDrive = null;
+//    private DcMotor frontRightDrive = null;
+//    private DcMotor backRightDrive = null;
     private DcMotor shooter = null;
+    private CRServo leftFeeder = null;
+    private CRServo rightFeeder = null;
     private double csp = 0.0;
     private DcMotor intake = null;
     private Gamepad prevpad1 = gamepad1;
     private Gamepad prevpad2 = gamepad2;
     private Limelight3A limelight;
 
+    private DriveBase driveBase = new DriveBase();
     @Override
     public void runOpMode() {
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "fl");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "bl");
-       frontRightDrive = hardwareMap.get(DcMotor.class, "fr");
-        backRightDrive = hardwareMap.get(DcMotor.class, "br");
+//        frontLeftDrive = hardwareMap.get(DcMotor.class, "fl");
+//        backLeftDrive = hardwareMap.get(DcMotor.class, "bl");
+//        frontRightDrive = hardwareMap.get(DcMotor.class, "fr");
+//        backRightDrive = hardwareMap.get(DcMotor.class, "br");
+        driveBase.init(hardwareMap.get(DcMotor.class, "fl"),
+                hardwareMap.get(DcMotor.class, "bl"),
+                hardwareMap.get(DcMotor.class, "fr"),
+                hardwareMap.get(DcMotor.class, "br"));
         shooter = hardwareMap.get(DcMotor.class, "shoot");
+        leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
+        rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
 //        intake = hardwareMap.get(DcMotor.class, "in");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
@@ -115,11 +125,15 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         // when you first test your robot, push the left joystick forward and observe the direction the wheels turn.
         // Reverse the direction (flip FORWARD <-> REVERSE ) of any wheel that runs backward
         // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
-        frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
-        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        backRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        shooter.setDirection(DcMotor.Direction.REVERSE);
+//        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+//        backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
+//        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
+//        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        shooter.setDirection(DcMotor.Direction.FORWARD);
+        rightFeeder.setDirection(CRServo.Direction.REVERSE);
+        leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
+
+
 //        intake.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
@@ -142,27 +156,40 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
                 }
             }
 
-            double max;
+//            double max;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x;
-            double yaw     =  gamepad1.right_stick_x;
+//            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+//            double lateral =  gamepad1.left_stick_x;
+//            double yaw     =  gamepad1.right_stick_x;
+            driveBase.takeInputs(-gamepad1.left_stick_y,gamepad1.left_stick_x,gamepad1.right_stick_x, false, false);
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double frontLeftPower  = axial + lateral + yaw;
-            double frontRightPower = axial - lateral - yaw;
-            double backLeftPower   = axial - lateral + yaw;
-            double backRightPower  = axial + lateral - yaw;
+//            double frontLeftPower  = axial + lateral + yaw;
+//            double frontRightPower = axial - lateral - yaw;
+//            double backLeftPower   = axial - lateral + yaw;
+//            double backRightPower  = axial + lateral - yaw;
             double shooterPower = 0;
             double intakePower = 0;
+            double leftFeederPower = 0;
+            double rightFeederPower = 0;
+
 
 
 
             if (gamepad1.right_trigger > 0.5) {
                 shooterPower = 1;
             }
+            else if (gamepad1.left_trigger > 0.5) {
+                shooterPower = -1;
+            }
+
+            if (gamepad1.left_bumper) {
+                leftFeederPower = 1;
+                rightFeederPower = 1;
+            }
+
 //            if (gamepad1.dpad_down && !prevpad1.a) {
 //                if (csp > 0) {
 //                    csp = csp - 0.5;
@@ -175,16 +202,16 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //            }
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
-            max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
-            max = Math.max(max, Math.abs(backLeftPower));
-            max = Math.max(max, Math.abs(backRightPower));
-
-            if (max > 1.0) {
-                frontLeftPower  /= max;
-                frontRightPower /= max;
-                backLeftPower   /= max;
-                backRightPower  /= max;
-            }
+//            max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
+//            max = Math.max(max, Math.abs(backLeftPower));
+//            max = Math.max(max, Math.abs(backRightPower));
+//
+//            if (max > 1.0) {
+//                frontLeftPower  /= max;
+//                frontRightPower /= max;
+//                backLeftPower   /= max;
+//                backRightPower  /= max;
+//            }
 
             // This is test code:
             //
@@ -203,34 +230,34 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             backRightPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad
             */
 
-            if (gamepad1.x) {
-                frontLeftPower = 1;
-            }
-            else if (gamepad1.y) {
-                frontRightPower = 1;
-            }
-            else if (gamepad1.b) {
-                backRightPower = 1;
-            }
-            else if (gamepad1.a) {
-                backLeftPower = 1;
-            }
+//            if (gamepad1.x) {
+//                frontLeftPower = 1;
+//            }
+//            else if (gamepad1.y) {
+//                frontRightPower = 1;
+//            }
+//            else if (gamepad1.b) {
+//                backRightPower = 1;
+//            }
+//            else if (gamepad1.a) {
+//                backLeftPower = 1;
+//            }
 
-
-
-
+            driveBase.sendSpeeds();
             // Send calculated power to wheels
-            frontLeftDrive.setPower(frontLeftPower);
-            frontRightDrive.setPower(frontRightPower);
-            backLeftDrive.setPower(backLeftPower);
-            backRightDrive.setPower(backRightPower);
+//            frontLeftDrive.setPower(frontLeftPower);
+//            frontRightDrive.setPower(frontRightPower);
+//            backLeftDrive.setPower(backLeftPower);
+//            backRightDrive.setPower(backRightPower);
             shooter.setPower(shooterPower);
+            leftFeeder.setPower(leftFeederPower);
+            rightFeeder.setPower(rightFeederPower);
 //          intake.setPower(intakePower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
-            telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
+//            telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
+//            telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
             telemetry.addData("Current Shooter power", csp);
             telemetry.update();
 
