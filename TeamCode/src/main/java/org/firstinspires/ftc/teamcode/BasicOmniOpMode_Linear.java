@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -36,6 +38,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -80,6 +85,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotor intake = null;
     private Gamepad prevpad1 = gamepad1;
     private Gamepad prevpad2 = gamepad2;
+    private Limelight3A limelight;
 
     @Override
     public void runOpMode() {
@@ -91,7 +97,13 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
        frontRightDrive = hardwareMap.get(DcMotor.class, "fr");
         backRightDrive = hardwareMap.get(DcMotor.class, "br");
         shooter = hardwareMap.get(DcMotor.class, "shoot");
-        intake = hardwareMap.get(DcMotor.class, "in");
+//        intake = hardwareMap.get(DcMotor.class, "in");
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+
+        telemetry.setMsTransmissionInterval(11);
+
+        limelight.pipelineSwitch(0);
+        limelight.start();
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -103,12 +115,12 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         // when you first test your robot, push the left joystick forward and observe the direction the wheels turn.
         // Reverse the direction (flip FORWARD <-> REVERSE ) of any wheel that runs backward
         // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         shooter.setDirection(DcMotor.Direction.REVERSE);
-        intake.setDirection(DcMotor.Direction.REVERSE);
+//        intake.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -119,6 +131,17 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            LLResult result = limelight.getLatestResult();
+            if (result != null) {
+                if (result.isValid()) {
+                    Pose3D botpose = result.getBotpose();
+                    telemetry.addData("tx", result.getTx());
+                    telemetry.addData("ty", result.getTy());
+                    telemetry.addData("Botpose", botpose.toString());
+                    telemetry.addData("id", result.getBotposeTagCount());
+                }
+            }
+
             double max;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
@@ -136,22 +159,20 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             double intakePower = 0;
 
 
-            if (gamepad1.b) {
-                intakePower = 1;
+
+            if (gamepad1.right_trigger > 0.5) {
+                shooterPower = 1;
             }
-            if (gamepad1.a) {
-                shooterPower = csp;
-            }
-            if (gamepad1.dpad_down && !prevpad1.a) {
-                if (csp > 0) {
-                    csp = csp - 0.1;
-                }
-            }
-            if (gamepad1.dpad_up && !prevpad2.a) {
-                if (csp < 1) {
-                    csp = csp + 0.1;
-                }
-            }
+//            if (gamepad1.dpad_down && !prevpad1.a) {
+//                if (csp > 0) {
+//                    csp = csp - 0.5;
+//                }
+//            }
+//            if (gamepad1.dpad_up && !prevpad2.a) {
+//                if (csp < 1) {
+//                    csp = csp + 0.5;
+//                }
+//            }
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
             max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
@@ -204,7 +225,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
             shooter.setPower(shooterPower);
-            intake.setPower(intakePower);
+//          intake.setPower(intakePower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
