@@ -34,6 +34,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -86,6 +87,13 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private Gamepad prevpad1 = gamepad1;
     private Gamepad prevpad2 = gamepad2;
     private Limelight3A limelight;
+    private CRServo leftFeeder = null;
+    private CRServo rightFeeder = null;
+
+    private double speedFromTagDist(double ty) {
+        double distFactor = Math.cos((ty+30)*Math.PI/180);
+        return distFactor * 1.5 - 0.375;
+    }
 
     @Override
     public void runOpMode() {
@@ -99,6 +107,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         shooter = hardwareMap.get(DcMotor.class, "shoot");
 //        intake = hardwareMap.get(DcMotor.class, "in");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
+        rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
 
         telemetry.setMsTransmissionInterval(11);
 
@@ -117,9 +127,11 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
         frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+          frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        shooter.setDirection(DcMotor.Direction.REVERSE);
+        shooter.setDirection(DcMotor.Direction.FORWARD);
+        rightFeeder.setDirection(CRServo.Direction.REVERSE);
+        leftFeeder.setDirection(CRServo.Direction.FORWARD);
 //        intake.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
@@ -151,17 +163,21 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double frontLeftPower  = axial + lateral + yaw;
-            double frontRightPower = axial - lateral - yaw;
-            double backLeftPower   = axial - lateral + yaw;
-            double backRightPower  = axial + lateral - yaw;
+            double frontRightPower  = axial - lateral + yaw;
+            double frontLeftPower = axial + lateral - yaw;
+            double backLeftPower   = axial - lateral - yaw;
+            double backRightPower  = axial + lateral + yaw;
             double shooterPower = 0;
             double intakePower = 0;
+            double feederPower = 0;
 
 
 
             if (gamepad1.right_trigger > 0.5) {
-                shooterPower = 1;
+                shooterPower = speedFromTagDist(result.getTy());
+            }
+            if (gamepad1.left_bumper) {
+                feederPower = 1;
             }
 //            if (gamepad1.dpad_down && !prevpad1.a) {
 //                if (csp > 0) {
@@ -226,12 +242,15 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             backRightDrive.setPower(backRightPower);
             shooter.setPower(shooterPower);
 //          intake.setPower(intakePower);
+            leftFeeder.setPower(feederPower);
+            rightFeeder.setPower(feederPower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
-            telemetry.addData("Current Shooter power", csp);
+            telemetry.addData("Current Shooter power", speedFromTagDist(result.getTy()));
+//            telemetry.addData("shoot vel", shooter.get)
             telemetry.update();
 
             prevpad1 = gamepad1;
