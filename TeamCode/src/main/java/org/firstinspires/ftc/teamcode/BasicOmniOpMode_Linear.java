@@ -34,7 +34,6 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -82,8 +81,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //    private DcMotor frontRightDrive = null;
 //    private DcMotor backRightDrive = null;
     private DcMotor shooter = null;
-    private CRServo leftFeeder = null;
-    private CRServo rightFeeder = null;
     private double csp = 0.0;
     private DcMotor intake = null;
     private Gamepad prevpad1 = gamepad1;
@@ -105,8 +102,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
                 hardwareMap.get(DcMotor.class, "fr"),
                 hardwareMap.get(DcMotor.class, "br"));
         shooter = hardwareMap.get(DcMotor.class, "shoot");
-        leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
-        rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
 //        intake = hardwareMap.get(DcMotor.class, "in");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
