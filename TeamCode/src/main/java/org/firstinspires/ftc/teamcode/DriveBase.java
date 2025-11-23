@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gam
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -25,13 +26,16 @@ public class DriveBase {
     private DcMotor intake = null;
     private Gamepad prevpad1 = gamepad1;
     private Gamepad prevpad2 = gamepad2;
-    private Limelight3A limelight;
-    public void init(DcMotor frontLeftDrive, DcMotor backLeftDrive, DcMotor frontRightDrive,DcMotor backRightDrive){
+    public Limelight3A limelight;
+    public void init(DcMotor frontLeftDrive, DcMotor backLeftDrive, DcMotor frontRightDrive,DcMotor backRightDrive, DcMotor shooter, CRServo leftFeeder, CRServo rightFeeder, Limelight3A limelight){
         this.frontLeftDrive = frontLeftDrive;
         this.backLeftDrive = backLeftDrive;
         this.frontRightDrive = frontRightDrive;
         this.backRightDrive = backRightDrive;
-//        this.shooter = shooter;
+        this.shooter = shooter;
+        this.leftFeeder = leftFeeder;
+        this.rightFeeder = rightFeeder;
+        this.limelight = limelight;
 //        shooter = hardwareMap.get(DcMotor.class, "shoot");
 //        leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
 //        rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
@@ -47,9 +51,9 @@ public class DriveBase {
         backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-//        shooter.setDirection(DcMotor.Direction.FORWARD);
-//        rightFeeder.setDirection(CRServo.Direction.REVERSE);
-//        leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooter.setDirection(DcMotor.Direction.FORWARD);
+        rightFeeder.setDirection(CRServo.Direction.REVERSE);
+        leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
 
 //        telemetry.addData("Status", "Initialized");
 //        telemetry.update();
@@ -59,24 +63,41 @@ public class DriveBase {
     double backLeftPower;
     double backRightPower;
     double shooterPower;
+    double feederPower;
 
-
-    public void takeInputs(double axial , double lateral, double yaw, boolean shoot, boolean shootRev){
+    private double speedFromTagDist(double ty) {
+        double distFactor = Math.cos((ty+30)*Math.PI/180);
+        return distFactor * 0.6 + 0.3;
+    }
+    public void takeInputs(double axial , double lateral, double yaw, boolean shoot, boolean shootRev, boolean feed) {
         double max;
-        frontLeftPower  = axial + lateral + yaw;
+        frontLeftPower = axial + lateral + yaw;
         frontRightPower = axial - lateral - yaw;
-        backLeftPower   = axial - lateral + yaw;
-        backRightPower  = axial + lateral - yaw;
+        backLeftPower = axial - lateral + yaw;
+        backRightPower = axial + lateral - yaw;
 
         max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
         max = Math.max(max, Math.abs(backLeftPower));
         max = Math.max(max, Math.abs(backRightPower));
 
         if (max > 1.0) {
-            frontLeftPower  /= max;
+            frontLeftPower /= max;
             frontRightPower /= max;
-            backLeftPower   /= max;
-            backRightPower  /= max;
+            backLeftPower /= max;
+            backRightPower /= max;
+        }
+        if (shoot) {
+            LLResult result = limelight.getLatestResult();
+            shooterPower = speedFromTagDist(result.getTy());
+        }
+        else {
+            shooterPower = 0;
+        }
+        if (feed) {
+            feederPower = 1;
+        }
+        else {
+            feederPower = 0;
         }
     }
 
@@ -85,9 +106,9 @@ public class DriveBase {
         frontRightDrive.setPower(frontRightPower);
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
-//        shooter.setPower(shooterPower);
-//        leftFeeder.setPower(leftFeederPower);
-//       rightFeeder.setPower(rightFeederPower);
+        shooter.setPower(shooterPower);
+        leftFeeder.setPower(feederPower);
+        rightFeeder.setPower(feederPower);
     }
 
 }

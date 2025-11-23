@@ -34,6 +34,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -86,8 +87,14 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private Gamepad prevpad1 = gamepad1;
     private Gamepad prevpad2 = gamepad2;
     private Limelight3A limelight;
+    private CRServo leftFeeder;
+    private CRServo rightFeeder;
 
     private DriveBase driveBase = new DriveBase();
+    private double speedFromTagDist(double ty) {
+        double distFactor = Math.cos((ty+30)*Math.PI/180);
+        return distFactor * 0.6 + 0.3;
+    }
     @Override
     public void runOpMode() {
 
@@ -100,15 +107,21 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         driveBase.init(hardwareMap.get(DcMotor.class, "fl"),
                 hardwareMap.get(DcMotor.class, "bl"),
                 hardwareMap.get(DcMotor.class, "fr"),
-                hardwareMap.get(DcMotor.class, "br"));
-        shooter = hardwareMap.get(DcMotor.class, "shoot");
+                hardwareMap.get(DcMotor.class, "br"),
+                hardwareMap.get(DcMotor.class, "shoot"),
+                hardwareMap.get(CRServo.class, "left_feeder"),
+                hardwareMap.get(CRServo.class, "right_feeder"),
+                hardwareMap.get(Limelight3A.class, "limelight"));
+//        shooter = hardwareMap.get(DcMotor.class, "shoot");
 //        intake = hardwareMap.get(DcMotor.class, "in");
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+//        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+//        leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");0
+//        rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
 
-        telemetry.setMsTransmissionInterval(11);
-
-        limelight.pipelineSwitch(0);
-        limelight.start();
+//        telemetry.setMsTransmissionInterval(11);
+//
+//        limelight.pipelineSwitch(0);
+//        limelight.start();
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -124,9 +137,9 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //        backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
 //        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
 //        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        shooter.setDirection(DcMotor.Direction.FORWARD);
-        rightFeeder.setDirection(CRServo.Direction.REVERSE);
-        leftFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
+//        shooter.setDirection(DcMotor.Direction.FORWARD);
+//        rightFeeder.setDirection(CRServo.Direction.REVERSE);
+//        leftFeeder.setDirection(CRServo.Direction.FORWARD);
 
 
 //        intake.setDirection(DcMotor.Direction.REVERSE);
@@ -140,16 +153,16 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            LLResult result = limelight.getLatestResult();
-            if (result != null) {
-                if (result.isValid()) {
-                    Pose3D botpose = result.getBotpose();
-                    telemetry.addData("tx", result.getTx());
-                    telemetry.addData("ty", result.getTy());
-                    telemetry.addData("Botpose", botpose.toString());
-                    telemetry.addData("id", result.getBotposeTagCount());
-                }
-            }
+//            LLResult result = limelight.getLatestResult();
+//            if (result != null) {
+//                if (result.isValid()) {
+//                    Pose3D botpose = result.getBotpose();
+//                    telemetry.addData("tx", result.getTx());
+//                    telemetry.addData("ty", result.getTy());
+//                    telemetry.addData("Botpose", botpose.toString());
+//                    telemetry.addData("id", result.getBotposeTagCount());
+//                }
+//            }
 
 //            double max;
 
@@ -157,7 +170,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
 //            double lateral =  gamepad1.left_stick_x;
 //            double yaw     =  gamepad1.right_stick_x;
-            driveBase.takeInputs(-gamepad1.left_stick_y,gamepad1.left_stick_x,gamepad1.right_stick_x, false, false);
+            driveBase.takeInputs(gamepad1.left_stick_y,-gamepad1.left_stick_x,gamepad1.right_stick_x, gamepad1.right_trigger > 0.5, gamepad1.left_trigger > 0.5, gamepad1.right_bumper);
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
@@ -165,25 +178,25 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //            double frontRightPower = axial - lateral - yaw;
 //            double backLeftPower   = axial - lateral + yaw;
 //            double backRightPower  = axial + lateral - yaw;
-            double shooterPower = 0;
-            double intakePower = 0;
-            double leftFeederPower = 0;
-            double rightFeederPower = 0;
+//            double shooterPower = 0;
+//            double intakePower = 0;
+//            double leftFeederPower = 0;
+//            double rightFeederPower = 0;
 
 
 
 
-            if (gamepad1.right_trigger > 0.5) {
-                shooterPower = 1;
-            }
-            else if (gamepad1.left_trigger > 0.5) {
-                shooterPower = -1;
-            }
-
-            if (gamepad1.left_bumper) {
-                leftFeederPower = 1;
-                rightFeederPower = 1;
-            }
+//            if (gamepad1.right_trigger > 0.5) {
+//                shooterPower = speedFromTagDist(result.getTy());
+//            }
+//            else if (gamepad1.left_trigger > 0.5) {
+//                shooterPower = -1;
+//            }
+//
+//            if (gamepad1.left_bumper) {
+//                leftFeederPower = 1;
+//                rightFeederPower = 1;
+//            }
 
 //            if (gamepad1.dpad_down && !prevpad1.a) {
 //                if (csp > 0) {
@@ -244,16 +257,16 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //            frontRightDrive.setPower(frontRightPower);
 //            backLeftDrive.setPower(backLeftPower);
 //            backRightDrive.setPower(backRightPower);
-            shooter.setPower(shooterPower);
-            leftFeeder.setPower(leftFeederPower);
-            rightFeeder.setPower(rightFeederPower);
+//            shooter.setPower(shooterPower);
+//            leftFeeder.setPower(leftFeederPower);
+//            rightFeeder.setPower(rightFeederPower);
 //          intake.setPower(intakePower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
 //            telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
 //            telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
-            telemetry.addData("Current Shooter power", csp);
+//            telemetry.addData("Current Shooter power", speedFromTagDist(result.getTy()));
             telemetry.update();
 
             prevpad1 = gamepad1;
