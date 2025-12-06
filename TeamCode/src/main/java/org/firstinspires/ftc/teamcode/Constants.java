@@ -8,4 +8,5 @@ public class Constants {
     public static final String BACK_RIGHT = "br";
     public static final String INTAKE = "in";
     public static final String ROUNDABOUT = "round";
+    public static final String ODOMETRY = "odey";
 }
