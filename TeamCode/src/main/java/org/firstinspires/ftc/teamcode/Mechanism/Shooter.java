@@ -18,7 +18,7 @@ public class Shooter {
         shooter = hardwareMap.get(DcMotor.class, Constants.SHOOT);
         shooter.setDirection(DcMotor.Direction.FORWARD);
         roundabout = hardwareMap.get(DcMotor.class, Constants.ROUNDABOUT);
-        roundabout.setDirection(DcMotor.Direction.FORWARD);
+        roundabout.setDirection(DcMotor.Direction.REVERSE);
 
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset the motor encoder
         shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Turn the motor back on when we are done

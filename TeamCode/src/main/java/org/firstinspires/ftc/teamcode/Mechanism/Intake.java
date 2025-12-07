@@ -10,7 +10,7 @@ public class Intake {
     private DcMotor intake = null;
     public Intake (HardwareMap hardwareMap){
         intake = hardwareMap.get(DcMotor.class, Constants.INTAKE);
-        intake.setDirection(DcMotorSimple.Direction.FORWARD);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public void spinIn(){
