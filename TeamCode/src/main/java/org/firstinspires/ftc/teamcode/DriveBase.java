@@ -38,15 +38,27 @@ public class DriveBase {
     double backLeftPower;
     double backRightPower;
     public void fieldRelativeDrive(double axial, double lateral, double yaw) {
-        double angle = Math.atan2(axial, lateral);
+        double angle = Math.atan2(lateral, axial);  // FIXED: X first
         double speed = Math.sqrt(axial * axial + lateral * lateral);
 
         double robotAngle = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
 
-        double newAngle = angle - robotAngle;
+        double newAngle = angle - robotAngle + Math.PI / 2;  // FIXED rotation
         drive(speed * Math.sin(newAngle), speed * Math.cos(newAngle), yaw);
-
     }
+
+
+//trying something new
+//    public void fieldRelativeDrive(double axial, double lateral, double yaw) {
+//        double angle = Math.atan2(axial, lateral);
+//        double speed = Math.sqrt(axial * axial + lateral * lateral);
+//
+//        double robotAngle = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
+//
+//        double newAngle = angle - robotAngle;
+//        drive(speed * Math.sin(newAngle), speed * Math.cos(newAngle), yaw);
+//
+//    }
 
 
 
