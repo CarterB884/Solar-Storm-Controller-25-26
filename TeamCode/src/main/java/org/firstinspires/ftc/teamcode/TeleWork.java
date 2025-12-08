@@ -54,6 +54,7 @@ public class TeleWork extends OpMode {
         if (gamepad1.right_bumper){
             shooter.shoot();
         }
+        // trying to make it so that we can free up the buttons by making all motors reversed when holding a button, idk if thats a good idea
         else if (gamepad1.y) {
             if (gamepad1.right_bumper){
                 shooter.shootRev();
