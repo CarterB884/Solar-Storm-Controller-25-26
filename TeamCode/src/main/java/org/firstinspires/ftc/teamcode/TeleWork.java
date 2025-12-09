@@ -49,7 +49,7 @@ public class TeleWork extends OpMode {
     public void loop() {
         goBildaPinpointDriver.update();
 
-        driveBase.fieldRelativeDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        driveBase.drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         //shooter-----------------------------------------------------------------------------
         if (gamepad1.right_bumper){
             shooter.shoot();
