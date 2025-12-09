@@ -1,19 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
-
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
-import org.firstinspires.ftc.teamcode.Constants;
-
-
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
-
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 public class DriveBase {
-    private ElapsedTime runtime = new ElapsedTime();
+
     private DcMotor frontLeftDrive = null;
     private DcMotor backLeftDrive = null;
     private DcMotor frontRightDrive = null;
@@ -37,15 +31,20 @@ public class DriveBase {
     double frontRightPower;
     double backLeftPower;
     double backRightPower;
+
+// change-----------------------------------------------------------------------------------------------------------
     public void fieldRelativeDrive(double axial, double lateral, double yaw) {
-        double angle = Math.atan2(lateral, axial);  // FIXED: X first
+        double angle = Math.atan2(axial, lateral);  // Y first, X second
         double speed = Math.sqrt(axial * axial + lateral * lateral);
 
         double robotAngle = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
 
-        double newAngle = angle - robotAngle + Math.PI / 2;  // FIXED rotation
+        // Add PI/2 to align joystick forward = field forward
+        double newAngle = angle - robotAngle + Math.PI / 2.0;
+
         drive(speed * Math.sin(newAngle), speed * Math.cos(newAngle), yaw);
     }
+//-------------------------------------------------------------------------------------------------------------
 
 
 //trying something new
