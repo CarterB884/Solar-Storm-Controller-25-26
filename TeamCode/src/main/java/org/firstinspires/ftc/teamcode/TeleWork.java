@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit.RADIANS;
-
+import org.firstinspires.ftc.teamcode.Constants;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -97,8 +97,6 @@ public class TeleWork extends OpMode {
         telemetry.update();
 
 //        telemetry.addData("Status", "Run Time: " + runtime.toString());
-//
-        telemetry.update();
     }
 
 
