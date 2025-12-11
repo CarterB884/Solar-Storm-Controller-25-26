@@ -3,16 +3,19 @@ package org.firstinspires.ftc.teamcode;
 import static org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit.RADIANS;
 import org.firstinspires.ftc.teamcode.Constants;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.Mechanism.Intake;
 import org.firstinspires.ftc.teamcode.Mechanism.Shooter;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import org.firstinspires.ftc.teamcode.Constants;
+import com.qualcomm.hardware.limelightvision.LLResult;
+
 
 @TeleOp
 public class TeleWork extends OpMode {
@@ -21,13 +24,20 @@ public class TeleWork extends OpMode {
     private Intake intake = null;
     public ElapsedTime runtime = new ElapsedTime();
     private GoBildaPinpointDriver goBildaPinpointDriver = null;
+    private double targetHeading = 0.0;  // Goal angle in degrees
+    private double ROTATION_KP = 0.015;  // Tune 0.01-0.02
+    private boolean autoRotateActive = false;
+    private boolean revOn = false;  // Reverse mode enabled by Y
+    private Limelight3A limelight3A = null;
+
+
 
 
     @Override
     public void init() {
         goBildaPinpointDriver = hardwareMap.get(GoBildaPinpointDriver.class, Constants.ODOMETRY);
 
-        // Configure Pinpoint odometry - CORRECTED API
+
         goBildaPinpointDriver.setOffsets(0.0, 0.0, DistanceUnit.MM);
 
         // 2 args only (xOffset, yOffset in mm)
@@ -37,6 +47,8 @@ public class TeleWork extends OpMode {
         shooter = new Shooter(hardwareMap, runtime, telemetry);
         driveBase = new DriveBase(hardwareMap, goBildaPinpointDriver);
         intake = new Intake(hardwareMap);
+        limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
+
     }
 
 
@@ -49,21 +61,56 @@ public class TeleWork extends OpMode {
     public void loop() {
         goBildaPinpointDriver.update();
 
-        driveBase.drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
-        //shooter-----------------------------------------------------------------------------
-        if (gamepad1.right_bumper){
-            shooter.shoot();
-        }
-        // trying to make it so that we can free up the buttons by making all motors reversed when holding a button, idk if thats a good idea
-        else if (gamepad1.y) {
-            if (gamepad1.right_bumper){
-                shooter.shootRev();
+
+        if (gamepad1.left_trigger > 0.5) {
+            autoRotateActive = true;
+
+            LLResult result = limelight3A.getLatestResult();
+            if (result != null && result.isValid()) {
+                // EXACT FORMULA: adjustment = result.getTx() / 360
+                double adjustment = result.getTx() / 360.0;
+                double rotationPower = Math.max(-0.3, Math.min(0.3, adjustment));
+
+                driveBase.autoRotate(rotationPower);
+
+                telemetry.addData("tx", String.format("%.1f°", result.getTx()));
+                telemetry.addData("adjustment", String.format("%.3f", adjustment));
+            } else {
+                driveBase.autoRotate(0.0);
+                telemetry.addData("Limelight", "No target");
             }
-        }
-        else {
-            shooter.stop();
+        } else {
+            autoRotateActive = false;
+            driveBase.fieldRelativeDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
 
+
+
+
+
+//shooter-------------------------------------------------------------------------------------
+        if (gamepad1.y) {
+            revOn = true;  // Enable reverse mode
+        }
+        else {
+            revOn = false;
+        }
+        if (gamepad1.right_bumper) {
+            if (revOn) {
+                shooter.shootRev();  // Reverse if revOn=true
+            }
+            else {
+                shooter.shoot();     // Forward if revOn=false
+            }
+        }
+
+        else {
+            shooter.stop();
+            }
+
+        // trying to make it so that we can free up the buttons by making all motors reversed when holding a button, idk if thats a good idea
+
+//old code------------------------------------------------
         //old code in case new one doesn't work
         // if (gamepad1.right_bumper){
         //     shooter.shoot();
@@ -72,17 +119,27 @@ public class TeleWork extends OpMode {
         //          shooter.shootRev();
         // else {
         //  shooter.stop();
-
+//--------------------------------------------------------
         //intake-------------------------------------------------------------------------------
         if (gamepad1.right_trigger > 0.5){
-            intake.spinIn();
+            if (revOn) {
+                intake.spinOut();
+            }
+            else {
+                intake.spinIn();
+            }
         }
         else {
             intake.spinStop();
         }
         // roundabout--------------------------------------------------------------------------
         if (gamepad1.dpad_up){
-            shooter.roundUp();
+            if (revOn) {
+                shooter.roundDown();
+            }
+            else {
+                shooter.roundUp();
+            }
         }
         else {
             shooter.roundStop();
@@ -91,9 +148,15 @@ public class TeleWork extends OpMode {
         if (gamepad1.a) {
             goBildaPinpointDriver.recalibrateIMU();
         }
+        if (gamepad1.b) {
+            revOn = false;  // Reset reverse mode
+        }
+
 
         telemetry.addData("Heading (deg)",
                 goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.DEGREES));
+        telemetry.addData("Mode", autoRotateActive ? "AUTO-ROTATE" : "MANUAL");
+
         telemetry.update();
 
 //        telemetry.addData("Status", "Run Time: " + runtime.toString());

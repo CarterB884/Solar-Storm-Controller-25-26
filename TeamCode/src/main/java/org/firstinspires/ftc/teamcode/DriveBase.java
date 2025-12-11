@@ -32,7 +32,14 @@ public class DriveBase {
     double backLeftPower;
     double backRightPower;
 
-// change-----------------------------------------------------------------------------------------------------------
+//auto rotate to april tag------------------------------------------------------------------------------------------
+
+public void autoRotate(double rotationPower) {
+    drive(0, 0, rotationPower);
+}
+
+
+    // change-----------------------------------------------------------------------------------------------------------
     public void fieldRelativeDrive(double axial, double lateral, double yaw) {
         double angle = Math.atan2(axial, lateral);  // Y first, X second
         double speed = Math.sqrt(axial * axial + lateral * lateral);
