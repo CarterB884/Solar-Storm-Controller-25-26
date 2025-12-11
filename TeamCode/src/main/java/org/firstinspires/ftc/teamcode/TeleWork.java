@@ -89,18 +89,17 @@ public class TeleWork extends OpMode {
 
 
 
-
 //shooter-------------------------------------------------------------------------------------
         // Shooter: Manual
         if (gamepad1.y) {
             revOn = true;  // Enable reverse mode
         }
-        if (gamepad1.b) {
+        if (gamepad1.bWasPressed()){
             revOn = false;  // Disable reverse mode
         }
 
         if (gamepad1.right_bumper) {
-            shooter.setRevMode(revOn);  // Set direction
+            // Set direction
             if (revOn) {
                 shooter.shootRev();
             } else {

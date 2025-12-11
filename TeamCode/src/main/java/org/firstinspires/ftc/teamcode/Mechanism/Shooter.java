@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Mechanism;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -14,6 +15,7 @@ public class Shooter {
     private DcMotor roundabout = null;
     public ElapsedTime runtime = null;
     public Telemetry telemetry = null;
+    private Servo aim = null;
     public Shooter(HardwareMap hardwareMap, ElapsedTime runtime, Telemetry telemetry){
         shooter = hardwareMap.get(DcMotor.class, Constants.SHOOT);
         shooter.setDirection(DcMotor.Direction.FORWARD);
