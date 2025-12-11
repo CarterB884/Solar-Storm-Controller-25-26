@@ -32,11 +32,11 @@ public class DriveBase {
     double backLeftPower;
     double backRightPower;
 
-//auto rotate to april tag------------------------------------------------------------------------------------------
+    //auto rotate to april tag------------------------------------------------------------------------------------------
 
-public void autoRotate(double rotationPower) {
+    public void autoRotate(double rotationPower) {
     drive(0, 0, rotationPower);
-}
+    }
 
 
     // change-----------------------------------------------------------------------------------------------------------
@@ -51,20 +51,20 @@ public void autoRotate(double rotationPower) {
 
         drive(speed * Math.sin(newAngle), speed * Math.cos(newAngle), yaw);
     }
-//-------------------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------------------
 
 
-//trying something new
-//    public void fieldRelativeDrive(double axial, double lateral, double yaw) {
-//        double angle = Math.atan2(axial, lateral);
-//        double speed = Math.sqrt(axial * axial + lateral * lateral);
-//
-//        double robotAngle = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
-//
-//        double newAngle = angle - robotAngle;
-//        drive(speed * Math.sin(newAngle), speed * Math.cos(newAngle), yaw);
-//
-//    }
+    //trying something new
+    //    public void fieldRelativeDrive(double axial, double lateral, double yaw) {
+    //        double angle = Math.atan2(axial, lateral);
+    //        double speed = Math.sqrt(axial * axial + lateral * lateral);
+    //
+    //        double robotAngle = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
+    //
+    //        double newAngle = angle - robotAngle;
+    //        drive(speed * Math.sin(newAngle), speed * Math.cos(newAngle), yaw);
+    //
+    //    }
 
 
 
