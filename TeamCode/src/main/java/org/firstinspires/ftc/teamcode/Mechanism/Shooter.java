@@ -26,7 +26,7 @@ public class Shooter {
         this.runtime = runtime;
         this.telemetry = telemetry;
     }
-
+    private boolean revMode = false;
     private int prevPos = 0;
     private double prevTime = 0;
     public void shoot() {
@@ -39,6 +39,24 @@ public class Shooter {
         telemetry.addData("shooter velocity", velo);
 
     }
+
+    public void setRevMode(boolean mode) { revMode = mode; }
+
+    public void shootDistance(double distanceInches) {
+        double power;
+        if (distanceInches < 10)     power = 0.45;  // Very close
+        else if (distanceInches < 20) power = 0.55;
+        else if (distanceInches < 30) power = 0.65;
+        else if (distanceInches < 40) power = 0.75;
+        else if (distanceInches < 50) power = 0.85;
+        else if (distanceInches < 65) power = 0.95;
+        else                          power = 1.00;  // Full power max range
+
+        if (revMode) power = -power;
+        shooter.setPower(power);
+    }
+
+
     public void shootRev() {
         shooter.setPower(-1);
     }
@@ -51,6 +69,9 @@ public class Shooter {
     public void roundStop(){
         roundabout.setPower(0);
     }
+
+
+
     public void stop() {
         shooter.setPower(0);
     }

@@ -17,6 +17,8 @@ import org.firstinspires.ftc.teamcode.Constants;
 import com.qualcomm.hardware.limelightvision.LLResult;
 
 
+
+
 @TeleOp
 public class TeleWork extends OpMode {
     private DriveBase driveBase = null;
@@ -89,26 +91,42 @@ public class TeleWork extends OpMode {
 
 
 //shooter-------------------------------------------------------------------------------------
+        // Shooter: Manual
         if (gamepad1.y) {
             revOn = true;  // Enable reverse mode
         }
-        else {
-            revOn = false;
+        if (gamepad1.b) {
+            revOn = false;  // Disable reverse mode
         }
+
         if (gamepad1.right_bumper) {
+            shooter.setRevMode(revOn);  // Set direction
             if (revOn) {
-                shooter.shootRev();  // Reverse if revOn=true
+                shooter.shootRev();
+            } else {
+                shooter.shoot();
             }
-            else {
-                shooter.shoot();     // Forward if revOn=false
+        }
+
+        //auto shoot-------------------------------------------------------------------------
+        else if (gamepad1.dpad_left) {
+            shooter.setRevMode(revOn);  // Set direction
+
+            double distanceInches = 40.0;  // Default safe distance
+            try {
+                double robotX = goBildaPinpointDriver.getPosX(DistanceUnit.INCH) / 25.4;
+                double robotY = goBildaPinpointDriver.getPosY(DistanceUnit.INCH) / 25.4;
+                distanceInches = Math.min(Math.sqrt(robotX * robotX + robotY * robotY), 75.0);
+            } catch (Exception e) {
+                distanceInches = 40.0;  // Fallback
             }
+            shooter.shootDistance(distanceInches);
         }
 
         else {
             shooter.stop();
-            }
+        }
 
-        // trying to make it so that we can free up the buttons by making all motors reversed when holding a button, idk if thats a good idea
 
 //old code------------------------------------------------
         //old code in case new one doesn't work
@@ -119,8 +137,8 @@ public class TeleWork extends OpMode {
         //          shooter.shootRev();
         // else {
         //  shooter.stop();
-//--------------------------------------------------------
-        //intake-------------------------------------------------------------------------------
+//old code-------------------------------------------------
+// intake-------------------------------------------------------------------------------------------
         if (gamepad1.right_trigger > 0.5){
             if (revOn) {
                 intake.spinOut();
@@ -132,7 +150,7 @@ public class TeleWork extends OpMode {
         else {
             intake.spinStop();
         }
-        // roundabout--------------------------------------------------------------------------
+// roundabout---------------------------------------------------------------------------------------
         if (gamepad1.dpad_up){
             if (revOn) {
                 shooter.roundDown();
@@ -148,9 +166,7 @@ public class TeleWork extends OpMode {
         if (gamepad1.a) {
             goBildaPinpointDriver.recalibrateIMU();
         }
-        if (gamepad1.b) {
-            revOn = false;  // Reset reverse mode
-        }
+
 
 
         telemetry.addData("Heading (deg)",
