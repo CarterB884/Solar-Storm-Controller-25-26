@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 
@@ -52,10 +53,10 @@ public class DriveBase {
         // it can be freely changed based on preference.
         // The equivalent button is start on Xbox-style controllers.
         if (gamepad.options) {
-            imu.resetYaw();
+            goBildaPinpointDriver.recalibrateIMU();
         }
 
-        double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        double botHeading = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
 
         // Rotate the movement direction counter to the bot's rotation
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
@@ -71,6 +72,8 @@ public class DriveBase {
         backLeftPower = (rotY - rotX + rx) / denominator;
         frontRightPower = (rotY - rotX - rx) / denominator;
         backRightPower = (rotY + rotX - rx) / denominator;
+
+        sendSpeeds();
     }
     //------------------------------- --------------------------------------------------------------
 
