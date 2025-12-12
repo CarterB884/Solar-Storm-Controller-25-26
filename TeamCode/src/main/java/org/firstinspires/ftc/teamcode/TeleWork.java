@@ -44,7 +44,8 @@ public class TeleWork extends OpMode {
 
         // 2 args only (xOffset, yOffset in mm)
         goBildaPinpointDriver.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        goBildaPinpointDriver.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        goBildaPinpointDriver.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        goBildaPinpointDriver.setOffsets(0.0, -1.8, DistanceUnit.INCH);  // Your pod measurements
 
         shooter = new Shooter(hardwareMap, runtime, telemetry);
         driveBase = new DriveBase(hardwareMap, goBildaPinpointDriver);
@@ -62,6 +63,10 @@ public class TeleWork extends OpMode {
     @Override
     public void loop() {
         goBildaPinpointDriver.update();
+
+        // Test heading for FOD
+        double headingDeg = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.DEGREES);
+        telemetry.addData("Heading", "%.1f°", headingDeg);
 
 
         if (gamepad1.left_trigger > 0.5) {
@@ -171,6 +176,11 @@ public class TeleWork extends OpMode {
         telemetry.addData("Heading (deg)",
                 goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.DEGREES));
         telemetry.addData("Mode", autoRotateActive ? "AUTO-ROTATE" : "MANUAL");
+        telemetry.addData("Heading (deg)", headingDeg);
+        telemetry.addData("X", "%.1f\"", goBildaPinpointDriver.getPosX(DistanceUnit.INCH));
+        telemetry.addData("Y", "%.1f\"", goBildaPinpointDriver.getPosY(DistanceUnit.INCH));
+        telemetry.addData("Heading", "%.1f°", goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.DEGREES));
+
 
         telemetry.update();
 
