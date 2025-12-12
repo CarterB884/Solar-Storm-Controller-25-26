@@ -31,6 +31,8 @@ public class TeleWork extends OpMode {
     private boolean autoRotateActive = false;
     private boolean revOn = false;  // Reverse mode enabled by Y
     private Limelight3A limelight3A = null;
+    boolean prevY = false;
+    boolean prevB = false;
 
 
 
@@ -55,6 +57,7 @@ public class TeleWork extends OpMode {
 
     public void start() {
         runtime.reset();
+        limelight3A.start();
         goBildaPinpointDriver.recalibrateIMU();
     }
 
@@ -72,35 +75,61 @@ public class TeleWork extends OpMode {
 //
 //            LLResult result = limelight3A.getLatestResult();
 //            if (result != null && result.isValid()) {
-//                // EXACT FORMULA: adjustment = result.getTx() / 360
-//                double adjustment = result.getTx() / 360.0;
-//                double rotationPower = Math.max(-0.3, Math.min(0.3, adjustment));
+//                double tx = result.getTx();   // degrees: + means target to the right (usually)
+//
+//                // Deadband so it doesn't jitter when nearly aligned
+//                if (Math.abs(tx) < 1.0) tx = 0;
+//
+//                // P-control (tune kP)
+//                double kP = 0.02; // start 0.015–0.03
+//                double rotationPower = tx * kP;
+//
+//                // clamp
+//                rotationPower = Math.max(-0.35, Math.min(0.35, rotationPower));
+//
+//                // If it turns the wrong way, flip the sign:
+//                // rotationPower = -rotationPower;
 //
 //                driveBase.autoRotate(rotationPower);
 //
-//                telemetry.addData("tx", String.format("%.1f°", result.getTx()));
-//                telemetry.addData("adjustment", String.format("%.3f", adjustment));
-//            } else {
-//                driveBase.autoRotate(0.0);
+//                telemetry.addData("LL tx", tx);
+//                telemetry.addData("rotPwr", rotationPower);
+//            }
+//            else {
+//                driveBase.autoRotate(0);
 //                telemetry.addData("Limelight", "No target");
 //            }
+//
 //        }
 //        else {
 //            autoRotateActive = false;
-
-        }
-
-
-
-
-//shooter-------------------------------------------------------------------------------------
-//        // Shooter: Manual
-//        if (gamepad1.y) {
-//            revOn = true;  // Enable reverse mode
+//
+//            // ROBOT-CENTRIC drive (reliable baseline)
+//            double axial = gamepad1.left_stick_y;
+//            double lateral = gamepad1.left_stick_x;
+//            double yaw = gamepad1.right_stick_x;
+//
+//            driveBase.drive(axial, lateral, yaw);
 //        }
-//        if (gamepad1.b()){
-//            revOn = false;  // Disable reverse mode
-//        }
+//        // FOD
+////        else {
+////            autoRotateActive = false;
+////            driveBase.fieldRelativeDrive(gamepad1);
+////        }
+//
+//
+//
+//
+////shooter-------------------------------------------------------------------------------------
+//
+//        boolean yPressed = gamepad1.y && !prevY;
+//        if (yPressed) revOn = !revOn;
+//        prevY = gamepad1.y;
+//
+//
+//        prevY = gamepad1.y;
+//
+//
 //
 //        if (gamepad1.right_bumper) {
 //            // Set direction
@@ -117,8 +146,8 @@ public class TeleWork extends OpMode {
 //
 //            double distanceInches = 40.0;  // Default safe distance
 //            try {
-//                double robotX = goBildaPinpointDriver.getPosX(DistanceUnit.INCH) / 25.4;
-//                double robotY = goBildaPinpointDriver.getPosY(DistanceUnit.INCH) / 25.4;
+//                double robotX = goBildaPinpointDriver.getPosX(DistanceUnit.INCH);
+//                double robotY = goBildaPinpointDriver.getPosY(DistanceUnit.INCH);
 //                distanceInches = Math.min(Math.sqrt(robotX * robotX + robotY * robotY), 75.0);
 //            } catch (Exception e) {
 //                distanceInches = 40.0;  // Fallback
@@ -177,13 +206,14 @@ public class TeleWork extends OpMode {
 //        telemetry.addData("Heading (deg)", headingDeg);
 //        telemetry.addData("X", "%.1f\"", goBildaPinpointDriver.getPosX(DistanceUnit.INCH));
 //        telemetry.addData("Y", "%.1f\"", goBildaPinpointDriver.getPosY(DistanceUnit.INCH));
+//        telemetry.addData("LT", gamepad1.left_trigger);
 //
-//
-//        telemetry.update();
+
+        telemetry.update();
 
 //        telemetry.addData("Status", "Run Time: " + runtime.toString());
     }
 
 
-
+}
 

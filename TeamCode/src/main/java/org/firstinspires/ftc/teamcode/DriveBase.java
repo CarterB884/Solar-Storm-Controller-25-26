@@ -45,7 +45,7 @@ public class DriveBase {
 
     // change---------------------------------------------------------------------------------------
     public void fieldRelativeDrive(Gamepad gamepad) {
-        double y = -gamepad.left_stick_y; // Remember, Y stick value is reversed
+        double y = gamepad.left_stick_y;
         double x = gamepad.left_stick_x;
         double rx = gamepad.right_stick_x;
 
