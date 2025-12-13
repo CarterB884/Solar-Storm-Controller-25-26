@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit.RADIANS;
+
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.Constants;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -51,6 +53,7 @@ public class TeleWork extends OpMode {
         driveBase = new DriveBase(hardwareMap, goBildaPinpointDriver);
         intake = new Intake(hardwareMap);
         limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight3A.pipelineSwitch(0);
 
     }
 
@@ -64,19 +67,23 @@ public class TeleWork extends OpMode {
     @Override
     public void loop() {
         goBildaPinpointDriver.update();
-        driveBase.fieldRelativeDrive(gamepad1);
+        driveBase.drive(gamepad1);
 //        // Test heading for FOD
 //        double headingDeg = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.DEGREES);
 //        telemetry.addData("Heading", "%.1f°", headingDeg);
 //
 //
-//        if (gamepad1.left_trigger > 0.5) {
-//            autoRotateActive = true;
+        if (gamepad1.left_trigger > 0.5) {
+            autoRotateActive = true;
 //
-//            LLResult result = limelight3A.getLatestResult();
-//            if (result != null && result.isValid()) {
+            LLResult result = limelight3A.getLatestResult();
+            if (result != null && result.isValid()) {
 //                double tx = result.getTx();   // degrees: + means target to the right (usually)
-//
+                Pose3D botpose = result.getBotpose();
+                telemetry.addData("tx", result.getTx());
+                telemetry.addData("ty", result.getTy());
+                telemetry.addData("Botpose", botpose.toString());
+            }
 //                // Deadband so it doesn't jitter when nearly aligned
 //                if (Math.abs(tx) < 1.0) tx = 0;
 //
@@ -110,7 +117,7 @@ public class TeleWork extends OpMode {
 //            double yaw = gamepad1.right_stick_x;
 //
 //            driveBase.drive(axial, lateral, yaw);
-//        }
+        }
 //        // FOD
 ////        else {
 ////            autoRotateActive = false;
@@ -121,25 +128,30 @@ public class TeleWork extends OpMode {
 //
 //
 ////shooter-------------------------------------------------------------------------------------
-//
-//        boolean yPressed = gamepad1.y && !prevY;
+
+//        boolean yPressed = gamepad2.yWasPressed();
 //        if (yPressed) revOn = !revOn;
-//        prevY = gamepad1.y;
-//
-//
-//        prevY = gamepad1.y;
-//
-//
-//
-//        if (gamepad1.right_bumper) {
-//            // Set direction
+
+
+
+
+        if (gamepad2.right_bumper) {
+            // Set direction
 //            if (revOn) {
+            shooter.shoot();
+
+//            else {
 //                shooter.shootRev();
-//            } else {
-//                shooter.shoot();
 //            }
-//        }
-//
+
+        }
+        else {
+            shooter.stop();
+        }
+        if (gamepad2.left_bumper) {
+            shooter.shootslow();
+        }
+        else shooter.stop();
 //        //auto shoot-------------------------------------------------------------------------
 //        else if (gamepad1.dpad_left) {
 //            shooter.setRevMode(revOn);  // Set direction
@@ -161,6 +173,7 @@ public class TeleWork extends OpMode {
 //
 //
 ////old code------------------------------------------------
+
 //        //old code in case new one doesn't work
 //        // if (gamepad1.right_bumper){
 //        //     shooter.shoot();
@@ -171,33 +184,32 @@ public class TeleWork extends OpMode {
 //        //  shooter.stop();
 ////old code-------------------------------------------------
 //// intake-------------------------------------------------------------------------------------------
-//        if (gamepad1.right_trigger > 0.5){
+        if (gamepad2.right_trigger > 0.5){
 //            if (revOn) {
-//                intake.spinOut();
+                intake.spinIn();
 //            }
 //            else {
 //                intake.spinIn();
-//            }
-//        }
-//        else {
-//            intake.spinStop();
-//        }
+
+        }
+        else {
+            intake.spinStop();
+        }
 //// roundabout---------------------------------------------------------------------------------------
-//        if (gamepad1.dpad_up){
-//            if (revOn) {
-//                shooter.roundDown();
-//            }
-//            else {
-//                shooter.roundUp();
-//            }
-//        }
-//        else {
-//            shooter.roundStop();
-//        }
+        if (gamepad2.dpad_up) {
+                shooter.roundUp();
+        }
+        else {
+            shooter.roundStop();
+        }
+        if (gamepad2.dpad_down) {
+            shooter.roundDown();
+        }
+        else shooter.roundStop();
 //        //resets heading-----------------------------------------------------------------------
-//        if (gamepad1.a) {
-//            goBildaPinpointDriver.recalibrateIMU();
-//        }
+        if (gamepad1.a) {
+            goBildaPinpointDriver.recalibrateIMU();
+        }
 //
 //
 //

@@ -18,9 +18,9 @@ public class Shooter {
     private Servo aim = null;
     public Shooter(HardwareMap hardwareMap, ElapsedTime runtime, Telemetry telemetry){
         shooter = hardwareMap.get(DcMotor.class, Constants.SHOOT);
-        shooter.setDirection(DcMotor.Direction.FORWARD);
+        shooter.setDirection(DcMotor.Direction.REVERSE);
         roundabout = hardwareMap.get(DcMotor.class, Constants.ROUNDABOUT);
-        roundabout.setDirection(DcMotor.Direction.REVERSE);
+        roundabout.setDirection(DcMotor.Direction.FORWARD);
 
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset the motor encoder
         shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Turn the motor back on when we are done
@@ -33,12 +33,12 @@ public class Shooter {
     private double prevTime = 0;
     public void shoot() {
         shooter.setPower(1);
-        int deltaPos = shooter.getCurrentPosition() - prevPos;
-        prevPos = shooter.getCurrentPosition();
-        double deltaTime = runtime.time() - prevTime;
-        prevTime = runtime.time();
-        double velo = deltaPos / deltaTime;
-        telemetry.addData("shooter velocity", velo);
+//        int deltaPos = shooter.getCurrentPosition() - prevPos;
+//        prevPos = shooter.getCurrentPosition();
+//        double deltaTime = runtime.time() - prevTime;
+//        prevTime = runtime.time();
+//        double velo = deltaPos / deltaTime;
+//        telemetry.addData("shooter velocity", velo);
 
     }
 
@@ -58,9 +58,12 @@ public class Shooter {
         shooter.setPower(power);
     }
 
+    public void shootslow() {
+        shooter.setPower(0.7);
+    }
 
     public void shootRev() {
-        shooter.setPower(-1);
+        shooter.setPower(-0.1);
     }
     public void roundUp(){
         roundabout.setPower(1);

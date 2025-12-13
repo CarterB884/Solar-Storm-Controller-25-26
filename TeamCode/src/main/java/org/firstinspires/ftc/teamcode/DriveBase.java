@@ -25,8 +25,8 @@ public class DriveBase {
         backRightDrive = hardwareMap.get(DcMotor.class, Constants.BACK_RIGHT);
 
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
-        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         this.goBildaPinpointDriver = goBildaPinpointDriver;
     }
@@ -38,9 +38,9 @@ public class DriveBase {
 
     //auto rotate to april tag----------------------------------------------------------------------
 
-    public void autoRotate(double rotationPower) {
-    drive(0, 0, rotationPower);
-    }
+//    public void autoRotate(double rotationPower) {
+//    drive();
+//    }
 
 
     // change---------------------------------------------------------------------------------------
@@ -92,7 +92,10 @@ public class DriveBase {
 
 
 
-    public void drive(double axial, double lateral, double yaw) {
+    public void drive(Gamepad gamepad) {
+        double axial = gamepad.left_stick_y;
+        double lateral = gamepad.left_stick_x;
+        double yaw = gamepad.right_stick_x;
         double max;
         frontLeftPower = -axial + lateral + yaw;
         frontRightPower = -axial - lateral - yaw;
