@@ -53,8 +53,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Robot: Auto blue front", group="Robot")
-public class Autobluefront extends LinearOpMode {
+@Autonomous(name="Robot: Auto red front", group="Robot")
+public class redFront extends LinearOpMode {
 
     /* Declare OpMode members. */
     private DcMotor frontLeftDrive = null;
@@ -188,9 +188,9 @@ public class Autobluefront extends LinearOpMode {
         // Step through each leg of the path, ensuring that the OpMode has not been stopped along the way.
 
 
-       goBack(1.75);
+        goBack(1.75);
 
-       autoShoot(0.5);
+        autoShoot(0.5);
 // pick up three more balls
 //       turnL(0.30);
 //
@@ -202,9 +202,9 @@ public class Autobluefront extends LinearOpMode {
 //
 //       autoShoot(5);
 
-       turnL(0.5);
+        turnL(0.5);
 
-       goForward(1.3);
+        goForward(1.3);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();

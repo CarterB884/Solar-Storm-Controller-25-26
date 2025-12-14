@@ -32,7 +32,7 @@ public class Shooter {
     private int prevPos = 0;
     private double prevTime = 0;
     public void shoot() {
-        shooter.setPower(1);
+        shooter.setPower(0.83);
 //        int deltaPos = shooter.getCurrentPosition() - prevPos;
 //        prevPos = shooter.getCurrentPosition();
 //        double deltaTime = runtime.time() - prevTime;
@@ -59,11 +59,11 @@ public class Shooter {
     }
 
     public void shootslow() {
-        shooter.setPower(0.7);
+        shooter.setPower(0.675);
     }
 
     public void shootRev() {
-        shooter.setPower(-0.1);
+        shooter.setPower(-0.2);
     }
     public void roundUp(){
         roundabout.setPower(1);

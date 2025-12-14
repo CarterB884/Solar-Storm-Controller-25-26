@@ -145,10 +145,7 @@ public class TeleWork extends OpMode {
 //            }
 
         }
-        else {
-            shooter.stop();
-        }
-        if (gamepad2.left_bumper) {
+        else if (gamepad2.left_bumper) {
             shooter.shootslow();
         }
         else shooter.stop();
@@ -199,10 +196,7 @@ public class TeleWork extends OpMode {
         if (gamepad2.dpad_up) {
                 shooter.roundUp();
         }
-        else {
-            shooter.roundStop();
-        }
-        if (gamepad2.dpad_down) {
+        else if (gamepad2.dpad_down) {
             shooter.roundDown();
         }
         else shooter.roundStop();
