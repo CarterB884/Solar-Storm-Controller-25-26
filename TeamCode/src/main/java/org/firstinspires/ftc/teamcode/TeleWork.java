@@ -135,20 +135,20 @@ public class TeleWork extends OpMode {
 
 
 
+//shooter-------------------------------------------------------------------------------------
         if (gamepad2.right_bumper) {
-            // Set direction
-//            if (revOn) {
-            shooter.shoot();
-
-//            else {
-//                shooter.shootRev();
-//            }
-
+            shooter.shoot();        // 55 RPS fast shot
         }
         else if (gamepad2.left_bumper) {
-            shooter.shootslow();
+            shooter.shootslow();    // 45 RPS slow shot
         }
-        else shooter.stop();
+        else if (gamepad1.dpad_left) {  // ← Gamepad1 D-Pad Left (FREE!)
+            shooter.shootDistance(36);  // Test distance shooting
+        }
+        else {
+            shooter.stop();
+        }
+
 //        //auto shoot-------------------------------------------------------------------------
 //        else if (gamepad1.dpad_left) {
 //            shooter.setRevMode(revOn);  // Set direction
@@ -192,7 +192,7 @@ public class TeleWork extends OpMode {
         else {
             intake.spinStop();
         }
-//// roundabout---------------------------------------------------------------------------------------
+// roundabout---------------------------------------------------------------------------------------
         if (gamepad2.dpad_up) {
                 shooter.roundUp();
         }
@@ -200,21 +200,31 @@ public class TeleWork extends OpMode {
             shooter.roundDown();
         }
         else shooter.roundStop();
-//        //resets heading-----------------------------------------------------------------------
+//      resets heading--------------------------------------------------------------------------------------
         if (gamepad1.a) {
-            goBildaPinpointDriver.recalibrateIMU();
+            goBildaPinpointDriver.resetPosAndIMU();
         }
+        //aiming------------------------------------------------------------------------------------
+        if (gamepad2.dpad_right) {
+            shooter.aimUp();
+        }
+        else if (gamepad2.dpad_left) {
+            shooter.aimDown();
+        }
+        else {
+            shooter.aimStop();
+        }
+//--------------------------------------------------------------------------------------------------
 //
 //
-//
-//
+//        //resets heading-----------------------------------------------------------------------
 //        telemetry.addData("Mode", autoRotateActive ? "AUTO-ROTATE" : "MANUAL");
 //        telemetry.addData("Heading (deg)", headingDeg);
 //        telemetry.addData("X", "%.1f\"", goBildaPinpointDriver.getPosX(DistanceUnit.INCH));
 //        telemetry.addData("Y", "%.1f\"", goBildaPinpointDriver.getPosY(DistanceUnit.INCH));
 //        telemetry.addData("LT", gamepad1.left_trigger);
 //
-
+        shooter.updateVelocity();
         telemetry.update();
 
 //        telemetry.addData("Status", "Run Time: " + runtime.toString());

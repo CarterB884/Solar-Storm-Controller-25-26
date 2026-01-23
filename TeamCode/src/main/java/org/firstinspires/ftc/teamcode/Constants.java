@@ -9,5 +9,8 @@ public class Constants {
     public static final String INTAKE = "in";
     public static final String ROUNDABOUT = "round";
     public static final String ODOMETRY = "odey";
-    public static final String AIM = "aim";
+    public static final String SHOOTER2 = "shooter2";  // Second flywheel motor
+    public static final String AIM_LEFT = "aimLeft";   // Left torque servo
+    public static final String AIM_RIGHT = "aimRight"; // Right torque servo
+
 }
