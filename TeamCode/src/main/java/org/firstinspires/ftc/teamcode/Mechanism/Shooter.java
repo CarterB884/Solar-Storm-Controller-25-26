@@ -2,11 +2,13 @@ package org.firstinspires.ftc.teamcode.Mechanism;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Constants;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -19,6 +21,13 @@ public class Shooter {
     private Servo aimRight = null;
     public ElapsedTime runtime = null;
     public Telemetry telemetry = null;
+    private DistanceSensor ballSensor = null;
+    private boolean ballInPosition = false;    // Ball ready?
+    private boolean rpsReady = false;         // Shooter speed ready?
+    private ElapsedTime indexTimer = new ElapsedTime();
+    private boolean indexing = false;
+
+
 
     public Shooter(HardwareMap hardwareMap, ElapsedTime runtime, Telemetry telemetry){
         shooter = hardwareMap.get(DcMotorEx.class, Constants.SHOOT);
@@ -30,15 +39,20 @@ public class Shooter {
         roundabout = hardwareMap.get(DcMotor.class, Constants.ROUNDABOUT);
         roundabout.setDirection(DcMotor.Direction.FORWARD);
 
-        shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // Velocity PID mode
-        shooter2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // Velocity PID mode
+        ballSensor = hardwareMap.get(DistanceSensor.class, Constants.BALL_SENSOR);
+        indexTimer.reset();
 
         aimLeft = hardwareMap.get(Servo.class, Constants.AIM_LEFT);
         aimRight = hardwareMap.get(Servo.class, Constants.AIM_RIGHT);
         aimLeft.setDirection(Servo.Direction.FORWARD);
         aimRight.setDirection(Servo.Direction.REVERSE);
+        //encoders----------------------------------------------------------------------------------
+        shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // Velocity PID mode
+        shooter2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // Velocity PID mode
+
+
 
         // Velocity PIDF setup (for fast RPM recovery...apparetly)
         PIDFCoefficients pidf = new PIDFCoefficients(0.8, 0.0, 0.1, 12.8);
@@ -104,15 +118,36 @@ public class Shooter {
     }
 
     public void updateVelocity() {
+        // Shooter velocity control
         shooter.setVelocity(targetRPS);
         shooter2.setVelocity(targetRPS);
 
-        telemetry.addData("Target RPS", "%.1f", targetRPS);
-        telemetry.addData("Shooter1 RPS", "%.1f", shooter.getVelocity());
-        telemetry.addData("Shooter2 RPS", "%.1f", shooter2.getVelocity());
+        // Check conditions
+        double sensorDistance = ballSensor.getDistance(DistanceUnit.INCH);
+        ballInPosition = sensorDistance < Constants.BALL_PRESENT_DISTANCE;  // Ball detected
+        rpsReady = Math.abs(shooter.getVelocity()) >= (targetRPS * 0.95);   // 95% of target RPS
 
-        safeServoCheck();
+        // AUTO SHOOT CYCLE: Both conditions met → index 1 ball
+        if (ballInPosition && rpsReady && !indexing) {
+            indexing = true;
+            indexTimer.reset();
+            roundUp();  // Feed 1 ball
+        }
+
+        // Stop indexing after short pulse
+        if (indexing && indexTimer.time() > 0.25) {
+            indexing = false;
+            roundStop();  // Ready for next ball
+        }
+
+        // Telemetry
+        telemetry.addData("Target RPS", "%.1f", targetRPS);
+        telemetry.addData("Actual RPS", "%.1f", shooter.getVelocity());
+        telemetry.addData("Ball Ready", ballInPosition);
+        telemetry.addData("RPS Ready", rpsReady);
+        telemetry.addData("Indexing", indexing);
     }
+
 
 
 

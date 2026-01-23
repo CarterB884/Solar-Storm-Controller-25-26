@@ -12,5 +12,8 @@ public class Constants {
     public static final String SHOOTER2 = "shooter2";  // Second flywheel motor
     public static final String AIM_LEFT = "aimLeft";   // Left torque servo
     public static final String AIM_RIGHT = "aimRight"; // Right torque servo
+    public static final String BALL_SENSOR = "ballSensor";  // Distance sensor name
+    public static final double BALL_PRESENT_DISTANCE = 4;  // Inches = ball detected
+
 
 }

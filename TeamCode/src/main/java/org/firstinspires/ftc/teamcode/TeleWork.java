@@ -202,7 +202,7 @@ public class TeleWork extends OpMode {
         else shooter.roundStop();
 //      resets heading--------------------------------------------------------------------------------------
         if (gamepad1.a) {
-            goBildaPinpointDriver.resetPosAndIMU();
+            goBildaPinpointDriver.recalibrateIMU();
         }
         //aiming------------------------------------------------------------------------------------
         if (gamepad2.dpad_right) {
