@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 public class Constants {
     public static final String SHOOT = "shooter";
     public static final String FRONT_LEFT = "fl";
@@ -14,6 +16,9 @@ public class Constants {
     public static final String AIM_RIGHT = "aimRight"; // Right torque servo
     public static final String BALL_SENSOR = "ballSensor";  // Distance sensor name
     public static final double BALL_PRESENT_DISTANCE = 4;  // Inches = ball detected
+    private boolean shootCommanded = false;    // Driver is holding shoot
+    private boolean ballWasSeen = false;       // For intake packing timing
+    private ElapsedTime packTimer = new ElapsedTime();
 
 
 }

@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcontroller.external.samples.SampleRevBlinkinLedDriver;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Constants;
@@ -17,7 +18,7 @@ public class Shooter {
     private DcMotorEx shooter = null;
     private DcMotorEx shooter2 = null;
     private DcMotor roundabout = null;
-    private Servo aimLeft = null;
+//    private Servo aimLeft = null;
     private Servo aimRight = null;
     public ElapsedTime runtime = null;
     public Telemetry telemetry = null;
@@ -26,6 +27,12 @@ public class Shooter {
     private boolean rpsReady = false;         // Shooter speed ready?
     private ElapsedTime indexTimer = new ElapsedTime();
     private boolean indexing = false;
+    private boolean shootCommanded = false;
+    private boolean ballWasSeen = false;
+    private ElapsedTime packTimer = new ElapsedTime();
+    private double targetAimPos = 0.5;
+    private static final double AIM_MIN = 0.35;  //testing parameters
+    private static final double AIM_MAX = 0.65;
 
 
 
@@ -34,7 +41,7 @@ public class Shooter {
         shooter.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shooter2 = hardwareMap.get(DcMotorEx.class, Constants.SHOOTER2);
-        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter2.setDirection(DcMotorSimple.Direction.FORWARD);
 
         roundabout = hardwareMap.get(DcMotor.class, Constants.ROUNDABOUT);
         roundabout.setDirection(DcMotor.Direction.FORWARD);
@@ -42,9 +49,10 @@ public class Shooter {
         ballSensor = hardwareMap.get(DistanceSensor.class, Constants.BALL_SENSOR);
         indexTimer.reset();
 
-        aimLeft = hardwareMap.get(Servo.class, Constants.AIM_LEFT);
+//        aimLeft = hardwareMap.get(Servo.class, Constants.AIM_LEFT);
         aimRight = hardwareMap.get(Servo.class, Constants.AIM_RIGHT);
-        aimLeft.setDirection(Servo.Direction.FORWARD);
+        aimRight.setPosition(0.5);
+//        aimLeft.setDirection(Servo.Direction.FORWARD);
         aimRight.setDirection(Servo.Direction.REVERSE);
         //encoders----------------------------------------------------------------------------------
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -56,8 +64,8 @@ public class Shooter {
 
         // Velocity PIDF setup (for fast RPM recovery...apparetly)
         PIDFCoefficients pidf = new PIDFCoefficients(0.8, 0.0, 0.1, 12.8);
-        shooter.setVelocityPIDFCoefficients(0.8, 0.0, 0.1, 12.8);
-        shooter2.setVelocityPIDFCoefficients(0.8, 0.0, 0.1, 12.8);
+        shooter.setVelocityPIDFCoefficients(0.8, 0.05, 0.1, 12.8);
+        shooter2.setVelocityPIDFCoefficients(0.8, 0.05, 0.1, 12.8);
 //for coaches(Denis)(PIDF = Proportional-Integral-Derivative-Feedforward - a feedback system that makes your flywheel motors spin at exactly the target speed (55 RPS) with lightning-fast recovery.)
         //P=0.8: Aggressive speedup when slow
         //
@@ -77,31 +85,45 @@ public class Shooter {
     private int prevPos = 0;
     private double prevTime = 0;
     private double targetRPS = 0;
-    private static final double SERVO_SPEED = 0.02;
-
+    private static final double SERVO_SPEED = 0.005;
+    private double currentServoPos = 0.5;
     public void setRevMode(boolean mode) { revMode = mode; }
+    public void updateAimFromVision(double ty) {
+        // ty positive = goal ABOVE camera → aim UP (higher servo #)
+        double aimOffset = ty * 0.015;  // Tune: 0.01 = subtle, 0.02 = aggressive
+        targetAimPos = 0.5 + aimOffset;
+
+        // CLAMP TO YOUR SERVO LIMITS (change these numbers!)
+        targetAimPos = Math.max(AIM_MIN, Math.min(AIM_MAX, targetAimPos));  // NEED TO CHANGE THESE NUMBERS IN CONSANTS CLASS
+        aimRight.setPosition(targetAimPos);
+    }
+    public double getTargetAimPos() { return targetAimPos; }
 
     public void shoot() {
-        targetRPS = 55.0;  // ~3300 RPM
+        targetRPS = 80;
     }
 
     public void shootslow() {
-        targetRPS = 45.0;  // Slower shot
+        targetRPS = 67.5;  // Slower shot
     }
+//    0.675
 
     public void shootRev() {
-        targetRPS = -12.0; // Index reverse
+        targetRPS = -50;
     }
 
-    public void shootDistance(double distanceInches) {
-        double rps;
-        if (distanceInches < 20) rps = 45;
-        else if (distanceInches < 40) rps = 55;
-        else rps = 65;
-        targetRPS = revMode ? -rps : rps;
-    }
+//    public void shootDistance(double distanceInches) {
+//        double rps;
+//        if (distanceInches < 20) rps = 45;
+//        else if (distanceInches < 40) rps = 55;
+//        else rps = 65;
+//        targetRPS = revMode ? -rps : rps;
+//    }
 
     public void roundUp(){
+        roundabout.setPower(0.6);
+    }
+    public void roundFah(){
         roundabout.setPower(1);
     }
 
@@ -117,71 +139,91 @@ public class Shooter {
         targetRPS = 0;
     }
 
+    public void setShootCommanded(boolean commanded) {
+        shootCommanded = commanded;
+    }
+
     public void updateVelocity() {
-        // Shooter velocity control
-        shooter.setVelocity(targetRPS);
-        shooter2.setVelocity(targetRPS);
+        shooter.setVelocity(targetRPS * 28);
+        shooter2.setVelocity(targetRPS * 28);
 
-        // Check conditions
         double sensorDistance = ballSensor.getDistance(DistanceUnit.INCH);
-        ballInPosition = sensorDistance < Constants.BALL_PRESENT_DISTANCE;  // Ball detected
-        rpsReady = Math.abs(shooter.getVelocity()) >= (targetRPS * 0.95);   // 95% of target RPS
+        ballInPosition = sensorDistance < Constants.BALL_PRESENT_DISTANCE;  // < 4"
 
-        // AUTO SHOOT CYCLE: Both conditions met → index 1 ball
-        if (ballInPosition && rpsReady && !indexing) {
+        // 3) Check shooter speed
+        rpsReady = (targetRPS > 0.5) && (Math.abs(shooter.getVelocity()) > (targetRPS * 28 * 0.98));
+        // 4) AUTO SHOOT: Ball at sensor + shooter ready + driver holding shoot
+        if (rpsReady && shootCommanded && !indexing) {
             indexing = true;
             indexTimer.reset();
-            roundUp();  // Feed 1 ball
         }
 
-        // Stop indexing after short pulse
-        if (indexing && indexTimer.time() > 0.25) {
+        // 5) Stop after exact timing
+        if (shootCommanded && indexing && indexTimer.time() > 0.25) {
             indexing = false;
-            roundStop();  // Ready for next ball
+        }
+
+        if (!shootCommanded) {
+            if (!ballInPosition) {
+                roundUp();
+            } else {
+                roundStop();
+            }
+        } else {
+            if (indexing) {
+                roundFah();
+            }
+            else if (!ballInPosition) {
+                roundUp();
+            } else {
+                roundStop();
+            }
         }
 
         // Telemetry
-        telemetry.addData("Target RPS", "%.1f", targetRPS);
-        telemetry.addData("Actual RPS", "%.1f", shooter.getVelocity());
+        telemetry.addData("Target Power", "%.2f", targetRPS);
+        telemetry.addData("Sensor (in)", "%.1f", sensorDistance);
         telemetry.addData("Ball Ready", ballInPosition);
         telemetry.addData("RPS Ready", rpsReady);
+        telemetry.addData("Shoot Cmd", shootCommanded);
         telemetry.addData("Indexing", indexing);
+        telemetry.addData("velocity", shooter.getVelocity() / 28);
     }
-
-
 
 
 
     // SAFE servo control - reads current position first
     public void aimUp() {
-        double currentPos = aimLeft.getPosition();
-        double newPos = Math.min(0.85, currentPos + SERVO_SPEED);
-        aimLeft.setPosition(newPos);
-        aimRight.setPosition(1.0 - newPos);
+        currentServoPos = currentServoPos + SERVO_SPEED;
+//        double currentPos = aimLeft.getPosition();
+//        double newPos = Math.min(0.85, currentPos + SERVO_SPEED);
+//        aimLeft.setPosition(newPos);
+        aimRight.setPosition(currentServoPos);
     }
 
     public void aimDown() {
-        double currentPos = aimLeft.getPosition();
-        double newPos = Math.max(0.15, currentPos - SERVO_SPEED);
-        aimLeft.setPosition(newPos);
-        aimRight.setPosition(1.0 - newPos);
+        currentServoPos =  currentServoPos - SERVO_SPEED;
+//        double currentPos = aimLeft.getPosition();
+//        double newPos = Math.max(0.15, currentPos - SERVO_SPEED);
+//        aimLeft.setPosition(newPos);
+        aimRight.setPosition(currentServoPos);
     }
     public void aimStop() {
-        aimLeft.setPosition(aimLeft.getPosition());  // Hold current position
-        aimRight.setPosition(aimRight.getPosition()); // Hold current position (brake)
+//        aimLeft.setPosition(aimLeft.getPosition());  // Hold current position
+//        aimRight.setPosition(aimRight.getPosition()); // Hold current position (brake)
     }
 
 
 
     private void safeServoCheck() {
-        double leftPos = aimLeft.getPosition();
+//        double leftPos = aimLeft.getPosition();
         double rightPos = aimRight.getPosition();
 
-        if (leftPos < 0.1 || leftPos > 0.9 || rightPos < 0.1 || rightPos > 0.9) {
-            aimLeft.setPosition(0.5);
-            aimRight.setPosition(0.5);
-            telemetry.addData("SERVO", "EMERGENCY RESET!");
-        }
+//        if (leftPos < 0.1 || leftPos > 0.9 || rightPos < 0.1 || rightPos > 0.9) {
+//            aimLeft.setPosition(0.5);
+//            aimRight.setPosition(0.5);
+//            telemetry.addData("SERVO", "EMERGENCY RESET!");
+//        }
     }
 
     private double speedFromTagDist(double ty) {

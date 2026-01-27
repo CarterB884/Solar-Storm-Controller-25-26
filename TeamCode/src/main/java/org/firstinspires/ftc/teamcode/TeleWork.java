@@ -67,7 +67,7 @@ public class TeleWork extends OpMode {
     @Override
     public void loop() {
         goBildaPinpointDriver.update();
-        driveBase.drive(gamepad1);
+        driveBase.fieldRelativeDrive(gamepad1);
 //        // Test heading for FOD
 //        double headingDeg = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.DEGREES);
 //        telemetry.addData("Heading", "%.1f°", headingDeg);
@@ -136,18 +136,18 @@ public class TeleWork extends OpMode {
 
 
 //shooter-------------------------------------------------------------------------------------
-        if (gamepad2.right_bumper) {
-            shooter.shoot();        // 55 RPS fast shot
-        }
-        else if (gamepad2.left_bumper) {
-            shooter.shootslow();    // 45 RPS slow shot
-        }
-        else if (gamepad1.dpad_left) {  // ← Gamepad1 D-Pad Left (FREE!)
-            shooter.shootDistance(36);  // Test distance shooting
-        }
-        else {
+        boolean shootHeld = gamepad2.right_bumper;
+        if (shootHeld) {
+            shooter.shoot();                    // targetRPS = 1.0
+            shooter.setShootCommanded(true);    // Enables auto-index
+        } else if (gamepad2.left_bumper) {
+            shooter.shootslow();
+            shooter.setShootCommanded(true);
+        } else {
             shooter.stop();
+            shooter.setShootCommanded(false);
         }
+
 
 //        //auto shoot-------------------------------------------------------------------------
 //        else if (gamepad1.dpad_left) {
@@ -211,9 +211,7 @@ public class TeleWork extends OpMode {
         else if (gamepad2.dpad_left) {
             shooter.aimDown();
         }
-        else {
-            shooter.aimStop();
-        }
+
 //--------------------------------------------------------------------------------------------------
 //
 //
