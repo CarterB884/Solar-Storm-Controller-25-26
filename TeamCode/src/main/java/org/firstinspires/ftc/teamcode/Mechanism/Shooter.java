@@ -62,20 +62,10 @@ public class Shooter {
 
 
 
-        // Velocity PIDF setup (for fast RPM recovery...apparetly)
+        // Velocity PIDF setup
         PIDFCoefficients pidf = new PIDFCoefficients(0.8, 0.0, 0.1, 12.8);
-        shooter.setVelocityPIDFCoefficients(0.8, 0.05, 0.1, 12.8);
-        shooter2.setVelocityPIDFCoefficients(0.8, 0.05, 0.1, 12.8);
-//for coaches(Denis)(PIDF = Proportional-Integral-Derivative-Feedforward - a feedback system that makes your flywheel motors spin at exactly the target speed (55 RPS) with lightning-fast recovery.)
-        //P=0.8: Aggressive speedup when slow
-        //
-        //I=0.0: No steady error (velocity PIDF rarely needs it)
-        //
-        //D=0.1: Light damping (prevents minor wobble)
-        //
-        //F=12.8: Overcomes flywheel inertia/friction instantly
-        //Your shooter reaches 55 RPS in 0.6 seconds instead of 3+ seconds. Shooter is always ready when driver presses fire button. Perfect consistency across battery voltage changes.
-    //time for testing i guess
+        shooter.setVelocityPIDFCoefficients(0.8, 0.07, 0.1, 12.8);
+        shooter2.setVelocityPIDFCoefficients(0.8, 0.07, 0.1, 12.8);
 
         this.runtime = runtime;
         this.telemetry = telemetry;

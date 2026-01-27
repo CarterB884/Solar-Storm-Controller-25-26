@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit.RADIANS;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.Constants;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
@@ -71,7 +72,7 @@ public class TeleWork extends OpMode {
 //        // Test heading for FOD
 //        double headingDeg = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.DEGREES);
 //        telemetry.addData("Heading", "%.1f°", headingDeg);
-//
+//  test
 //
         if (gamepad1.left_trigger > 0.5) {
             autoRotateActive = true;
@@ -127,29 +128,7 @@ public class TeleWork extends OpMode {
 //
 //
 //
-////shooter-------------------------------------------------------------------------------------
-
-//        boolean yPressed = gamepad2.yWasPressed();
-//        if (yPressed) revOn = !revOn;
-
-
-
-
-//shooter-------------------------------------------------------------------------------------
-        boolean shootHeld = gamepad2.right_bumper;
-        if (shootHeld) {
-            shooter.shoot();                    // targetRPS = 1.0
-            shooter.setShootCommanded(true);    // Enables auto-index
-        } else if (gamepad2.left_bumper) {
-            shooter.shootslow();
-            shooter.setShootCommanded(true);
-        } else {
-            shooter.stop();
-            shooter.setShootCommanded(false);
-        }
-
-
-//        //auto shoot-------------------------------------------------------------------------
+        //        //auto shoot-------------------------------------------------------------------------
 //        else if (gamepad1.dpad_left) {
 //            shooter.setRevMode(revOn);  // Set direction
 //
@@ -168,20 +147,32 @@ public class TeleWork extends OpMode {
 //            shooter.stop();
 //        }
 //
-//
 ////old code------------------------------------------------
-
+//
 //        //old code in case new one doesn't work
 //        // if (gamepad1.right_bumper){
 //        //     shooter.shoot();
 //        //        }
-//        // else if (gamepad1.left_bumper){
-//        //          shooter.shootRev();
+//       // else if (gamepad1.left_bumper){
+//       //          shooter.shootRev();
 //        // else {
-//        //  shooter.stop();
+//       //  shooter.stop();
 ////old code-------------------------------------------------
+//shooter-------------------------------------------------------------------------------------
+        boolean shootHeld = gamepad1.right_bumper;
+        if (shootHeld) {
+            shooter.shoot();
+            shooter.setShootCommanded(true);
+        } else if (gamepad1.left_bumper) {
+            shooter.shootslow();
+            shooter.setShootCommanded(true);
+        } else {
+            shooter.stop();
+            shooter.setShootCommanded(false);
+        }
+
 //// intake-------------------------------------------------------------------------------------------
-        if (gamepad2.right_trigger > 0.5){
+        if (gamepad1.right_trigger > 0.5){
 //            if (revOn) {
                 intake.spinIn();
 //            }
@@ -196,13 +187,13 @@ public class TeleWork extends OpMode {
         if (gamepad2.dpad_up) {
                 shooter.roundUp();
         }
-        else if (gamepad2.dpad_down) {
+        else if (gamepad1.dpad_down) {
             shooter.roundDown();
         }
         else shooter.roundStop();
 //      resets heading--------------------------------------------------------------------------------------
         if (gamepad1.a) {
-            goBildaPinpointDriver.recalibrateIMU();
+            goBildaPinpointDriver.setHeading(0, AngleUnit.DEGREES);
         }
         //aiming------------------------------------------------------------------------------------
         if (gamepad2.dpad_right) {
