@@ -26,6 +26,7 @@ public class Shooter {
     private boolean ballInPosition = false;    // Ball ready?
     private boolean rpsReady = false;         // Shooter speed ready?
     private ElapsedTime indexTimer = new ElapsedTime();
+    private ElapsedTime rpsTimer = new ElapsedTime();
     private boolean indexing = false;
     private boolean shootCommanded = false;
     private boolean ballWasSeen = false;
@@ -74,28 +75,40 @@ public class Shooter {
     private boolean revMode = false;
     private int prevPos = 0;
     private double prevTime = 0;
-    private double targetRPS = 0;
+    public double targetRPS = 0;
     private static final double SERVO_SPEED = 0.005;
     private double currentServoPos = 0.5;
     public void setRevMode(boolean mode) { revMode = mode; }
     public void updateAimFromVision(double ty) {
-        // ty positive = goal ABOVE camera → aim UP (higher servo #)
-        double aimOffset = ty * 0.015;  // Tune: 0.01 = subtle, 0.02 = aggressive
-        targetAimPos = 0.5 + aimOffset;
+        // Far preset = 0.5 (your current default)
+        // Close shots only = slight UP adjustment (+0.05 max)
+        double closeAdjust = 0;
 
-        // CLAMP TO YOUR SERVO LIMITS (change these numbers!)
-        targetAimPos = Math.max(AIM_MIN, Math.min(AIM_MAX, targetAimPos));  // NEED TO CHANGE THESE NUMBERS IN CONSANTS CLASS
+        if (ty > 5.0) {  // Close to net (high ty)
+            closeAdjust = 0.04;  // Slight up tilt only
+        } else if (ty > 2.0) {
+            closeAdjust = 0.02;  // Very slight
+        }
+
+        targetAimPos = 0.5 + closeAdjust;  // Far shots = no change
+        targetAimPos = Math.max(AIM_MIN, Math.min(AIM_MAX, targetAimPos));
         aimRight.setPosition(targetAimPos);
     }
+
     public double getTargetAimPos() { return targetAimPos; }
 
     public void shoot() {
-        targetRPS = 80;
+        targetRPS = 75;
+    }
+    public void shootslow(double distanceInches) {
+        if (distanceInches < 60) {  // Close shot
+            targetRPS = 55 + (distanceInches * 0.4);  // Variable 55-80
+            targetRPS = Math.max(55, Math.min(80, targetRPS));
+        } else {
+            targetRPS = 80;  // Far shot full power
+        }
     }
 
-    public void shootslow() {
-        targetRPS = 67.5;  // Slower shot
-    }
 //    0.675
 
     public void shootRev() {
@@ -140,8 +153,21 @@ public class Shooter {
         double sensorDistance = ballSensor.getDistance(DistanceUnit.INCH);
         ballInPosition = sensorDistance < Constants.BALL_PRESENT_DISTANCE;  // < 4"
 
-        // 3) Check shooter speed
+        // RESET TIMER when new target set (shooter slow)
+        if (Math.abs(shooter.getVelocity()) < (targetRPS * 28 * 0.5)) {
+            rpsTimer.reset();
+        }
+
+        // YOUR ORIGINAL 98% READY CHECK
         rpsReady = (targetRPS > 0.5) && (Math.abs(shooter.getVelocity()) > (targetRPS * 28 * 0.98));
+
+        // BOOST MODE: Not ready after 5 seconds
+        boolean boostMode = (targetRPS > 0.5) && !rpsReady && (rpsTimer.time() > 5.0);
+        if (boostMode) {
+            targetAimPos = Math.min(targetAimPos + 0.08, AIM_MAX);  // Servo UP 5°
+            aimRight.setPosition(targetAimPos);
+        }
+
         // 4) AUTO SHOOT: Ball at sensor + shooter ready + driver holding shoot
         if (rpsReady && shootCommanded && !indexing) {
             indexing = true;
@@ -153,6 +179,7 @@ public class Shooter {
             indexing = false;
         }
 
+        // YOUR EXACT ROUNDABOUT LOGIC
         if (!shootCommanded) {
             if (!ballInPosition) {
                 roundUp();
@@ -170,14 +197,16 @@ public class Shooter {
             }
         }
 
-        // Telemetry
-        telemetry.addData("Target Power", "%.2f", targetRPS);
+        // ENHANCED TELEMETRY
+        telemetry.addData("Target RPS", "%.1f", targetRPS);
         telemetry.addData("Sensor (in)", "%.1f", sensorDistance);
         telemetry.addData("Ball Ready", ballInPosition);
         telemetry.addData("RPS Ready", rpsReady);
+        telemetry.addData("Boost Time", "%.1f s", rpsTimer.time());
+        telemetry.addData("Boost Mode", boostMode);
+        telemetry.addData("AimPos", "%.3f", targetAimPos);
         telemetry.addData("Shoot Cmd", shootCommanded);
         telemetry.addData("Indexing", indexing);
-        telemetry.addData("velocity", shooter.getVelocity() / 28);
     }
 
 

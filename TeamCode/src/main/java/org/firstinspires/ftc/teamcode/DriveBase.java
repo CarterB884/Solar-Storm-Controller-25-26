@@ -36,25 +36,14 @@ public class DriveBase {
     double backLeftPower;
     double backRightPower;
 
-    //auto rotate to april tag----------------------------------------------------------------------
-
-//    public void autoRotate(double rotationPower) {
-//    drive();
-//    }
-
 
     // change---------------------------------------------------------------------------------------
     public void fieldRelativeDrive(Gamepad gamepad) {
-        double y = gamepad.left_stick_y;
+        double y = -gamepad.left_stick_y;
         double x = gamepad.left_stick_x;
         double rx = gamepad.right_stick_x;
 
-        // This button choice was made so that it is hard to hit on accident,
-        // it can be freely changed based on preference.
-        // The equivalent button is start on Xbox-style controllers.
-        if (gamepad.options) {
-            goBildaPinpointDriver.recalibrateIMU();
-        }
+
 
         double botHeading = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
 
@@ -75,20 +64,19 @@ public class DriveBase {
 
         sendSpeeds();
     }
+    public void autoRotate(double rotationPower) {
+        double axial = 0;      // No forward
+        double lateral = 0;    // No strafe
+        double yaw = rotationPower;  // Pure rotation
+
+        frontLeftPower = -axial + lateral + yaw;
+        frontRightPower = -axial - lateral - yaw;
+        backLeftPower = -axial - lateral + yaw;
+        backRightPower = -axial + lateral - yaw;
+
+        sendSpeeds();
+    }
     //------------------------------- --------------------------------------------------------------
-
-
-    //trying something new
-    //    public void fieldRelativeDrive(double axial, double lateral, double yaw) {
-    //        double angle = Math.atan2(axial, lateral);
-    //        double speed = Math.sqrt(axial * axial + lateral * lateral);
-    //
-    //        double robotAngle = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
-    //
-    //        double newAngle = angle - robotAngle;
-    //        drive(speed * Math.sin(newAngle), speed * Math.cos(newAngle), yaw);
-    //
-    //    }
 
 
 
