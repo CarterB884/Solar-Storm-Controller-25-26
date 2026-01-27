@@ -64,9 +64,8 @@ public class Shooter {
 
 
         // Velocity PIDF setup
-        PIDFCoefficients pidf = new PIDFCoefficients(0.8, 0.0, 0.1, 12.8);
-        shooter.setVelocityPIDFCoefficients(0.8, 0.07, 0.1, 12.8);
-        shooter2.setVelocityPIDFCoefficients(0.8, 0.07, 0.1, 12.8);
+        shooter.setVelocityPIDFCoefficients(0.8, 0.09, 0.1, 12.8);
+        shooter2.setVelocityPIDFCoefficients(0.9, 0.09, 0.1, 12.8);
 
         this.runtime = runtime;
         this.telemetry = telemetry;
@@ -153,18 +152,17 @@ public class Shooter {
         double sensorDistance = ballSensor.getDistance(DistanceUnit.INCH);
         ballInPosition = sensorDistance < Constants.BALL_PRESENT_DISTANCE;  // < 4"
 
-        // RESET TIMER when new target set (shooter slow)
-        if (Math.abs(shooter.getVelocity()) < (targetRPS * 28 * 0.5)) {
-            rpsTimer.reset();
-        }
+//        // RESET TIMER when new target set (shooter slow)
+//        if (Math.abs(shooter.getVelocity()) < (targetRPS * 28 * 0.5)) {
+//            rpsTimer.reset();
+//        }
 
-        // YOUR ORIGINAL 98% READY CHECK
         rpsReady = (targetRPS > 0.5) && (Math.abs(shooter.getVelocity()) > (targetRPS * 28 * 0.98));
 
         // BOOST MODE: Not ready after 5 seconds
         boolean boostMode = (targetRPS > 0.5) && !rpsReady && (rpsTimer.time() > 5.0);
         if (boostMode) {
-            targetAimPos = Math.min(targetAimPos + 0.08, AIM_MAX);  // Servo UP 5°
+            targetAimPos = Math.min(currentServoPos + 0.08, AIM_MAX);  // Servo UP 5°
             aimRight.setPosition(targetAimPos);
         }
 
@@ -174,12 +172,10 @@ public class Shooter {
             indexTimer.reset();
         }
 
-        // 5) Stop after exact timing
         if (shootCommanded && indexing && indexTimer.time() > 0.25) {
             indexing = false;
         }
 
-        // YOUR EXACT ROUNDABOUT LOGIC
         if (!shootCommanded) {
             if (!ballInPosition) {
                 roundUp();
@@ -203,7 +199,7 @@ public class Shooter {
         telemetry.addData("Ball Ready", ballInPosition);
         telemetry.addData("RPS Ready", rpsReady);
         telemetry.addData("Boost Time", "%.1f s", rpsTimer.time());
-        telemetry.addData("Boost Mode", boostMode);
+//        telemetry.addData("Boost Mode", boostMode);
         telemetry.addData("AimPos", "%.3f", targetAimPos);
         telemetry.addData("Shoot Cmd", shootCommanded);
         telemetry.addData("Indexing", indexing);

@@ -37,7 +37,12 @@ public class TeleWork extends OpMode {
     boolean prevY = false;
     boolean prevB = false;
 
-
+    private double prevTxError = 0;
+    private double integralTx = 0;
+    private double pidTimer = 0;
+    private double kp = 0.04;
+    private double ki = 0.01;
+    private double kd = 0.02;
 
 
     @Override
@@ -69,35 +74,63 @@ public class TeleWork extends OpMode {
     public void loop() {
         goBildaPinpointDriver.update();
 
-       // AUTO-ROTATE TO APRILTAG - Gamepad1 Left Trigger
         if (gamepad1.left_trigger > 0.5) {
             autoRotateActive = true;
 
             LLResult result = limelight3A.getLatestResult();
             if (result != null && result.isValid()) {
-                double tx = result.getTx(); // Horizontal offset DEGREES
-                tx = tx + 10;
+                double tx = result.getTx();
+                tx = tx + 2.5;  // Your offset correction
 
                 // DEAD ZONE ±1°
                 if (Math.abs(tx) < 1.0) {
                     driveBase.autoRotate(0);
+                    integralTx = 0;  // Reset integral
                 } else {
-                    double kP = 0.025;  //WE CAN TUNE THIS
-                    double rotationPower = tx * kP;
-                    rotationPower = Math.max(-0.35, Math.min(0.35, rotationPower));
+                    // PID CALCULATIONS (20ms loop ~50Hz)
+                    pidTimer += 0.02;
+                    double dt = 0.02;
+
+                    // PROPORTIONAL
+                    double pTerm = tx * kp;
+
+                    // INTEGRAL (windup protection)
+                    integralTx += tx * dt;
+                    integralTx = Math.max(-10, Math.min(10, integralTx));  // Anti-windup
+                    double iTerm = integralTx * ki;
+
+                    // DERIVATIVE
+                    double derivative = (tx - prevTxError) / dt;
+                    double dTerm = derivative * kd;
+
+                    // PID OUTPUT
+                    double rotationPower = pTerm + iTerm + dTerm;
+                    rotationPower = Math.max(-0.4, Math.min(0.4, rotationPower));
+
                     driveBase.autoRotate(rotationPower);
 
+                    // Update for next loop
+                    prevTxError = tx;
+
+                    // Telemetry
                     telemetry.addData("tx°", "%.1f", tx);
+                    telemetry.addData("P", "%.3f", pTerm);
+                    telemetry.addData("I", "%.3f", iTerm);
+                    telemetry.addData("D", "%.3f", dTerm);
+
                     telemetry.addData("rotPwr", "%.2f", rotationPower);
                 }
             } else {
                 driveBase.autoRotate(0);
-                telemetry.addData("Limelight", "No tag");
+                integralTx = 0;
             }
         } else {
             autoRotateActive = false;
-            driveBase.fieldRelativeDrive(gamepad1);  // FOD continues
+            driveBase.fieldRelativeDrive(gamepad1);
+            integralTx = 0;  // Reset when off
+            prevTxError = 0;
         }
+
 
 //
 //
