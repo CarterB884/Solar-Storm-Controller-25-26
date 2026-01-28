@@ -76,7 +76,7 @@ public class Shooter {
     private double prevTime = 0;
     public double targetRPS = 0;
     private static final double SERVO_SPEED = 0.005;
-    private double currentServoPos = 0.5;
+    private double currentServoPos = 0.4;
     public void setRevMode(boolean mode) { revMode = mode; }
     public void updateAimFromVision(double ty) {
         // Far preset = 0.5 (your current default)
@@ -153,20 +153,19 @@ public class Shooter {
         ballInPosition = sensorDistance < Constants.BALL_PRESENT_DISTANCE;  // < 4"
 
 //        // RESET TIMER when new target set (shooter slow)
-//        if (Math.abs(shooter.getVelocity()) < (targetRPS * 28 * 0.5)) {
-//            rpsTimer.reset();
-//        }
+        if (!rpsReady && shootCommanded && ballInPosition) {
+            rpsTimer.reset();
+        }
 
         rpsReady = (targetRPS > 0.5) && (Math.abs(shooter.getVelocity()) > (targetRPS * 28 * 0.98));
 
-        // BOOST MODE: Not ready after 5 seconds
-        boolean boostMode = (targetRPS > 0.5) && !rpsReady && (rpsTimer.time() > 5.0);
+        // BOOST MODE: Not ready after 6 seconds
+        boolean boostMode = (targetRPS > 0.5) && !rpsReady && (rpsTimer.time() > 6.0);
         if (boostMode) {
             targetAimPos = Math.min(currentServoPos + 0.08, AIM_MAX);  // Servo UP 5°
             aimRight.setPosition(targetAimPos);
         }
 
-        // 4) AUTO SHOOT: Ball at sensor + shooter ready + driver holding shoot
         if (rpsReady && shootCommanded && !indexing) {
             indexing = true;
             indexTimer.reset();
@@ -193,7 +192,7 @@ public class Shooter {
             }
         }
 
-        // ENHANCED TELEMETRY
+        //TELEMETRY
         telemetry.addData("Target RPS", "%.1f", targetRPS);
         telemetry.addData("Sensor (in)", "%.1f", sensorDistance);
         telemetry.addData("Ball Ready", ballInPosition);
@@ -207,11 +206,9 @@ public class Shooter {
 
 
 
-    // SAFE servo control - reads current position first
     public void aimUp() {
         currentServoPos = currentServoPos + SERVO_SPEED;
 //        double currentPos = aimLeft.getPosition();
-//        double newPos = Math.min(0.85, currentPos + SERVO_SPEED);
 //        aimLeft.setPosition(newPos);
         aimRight.setPosition(currentServoPos);
     }

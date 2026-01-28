@@ -22,8 +22,8 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 
 
 
-@TeleOp(name="Robot: TeleWork", group="Robot")
-public class TeleWork extends OpMode {
+@TeleOp(name="TeleWorkBase", group="Robot")
+public class teleworkBase extends OpMode {
     private DriveBase driveBase = null;
     private Shooter shooter = null;
     private Intake intake = null;
@@ -37,13 +37,7 @@ public class TeleWork extends OpMode {
     boolean prevY = false;
     boolean prevB = false;
 
-    private double prevTxError = 0;
-    private double integralTx = 0;
-    private double lastTxError = 0;
-    private ElapsedTime pidTimer = new ElapsedTime();
-    private double kp = 0.04;
-    private double ki = 0.01;
-    private double kd = 0.04;
+
 
 
     @Override
@@ -51,7 +45,7 @@ public class TeleWork extends OpMode {
         goBildaPinpointDriver = hardwareMap.get(GoBildaPinpointDriver.class, Constants.ODOMETRY);
 
 
-
+        // 2 args only (xOffset, yOffset in mm)
         goBildaPinpointDriver.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         goBildaPinpointDriver.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
         goBildaPinpointDriver.setOffsets(-7.48, -8.46, DistanceUnit.INCH);  // Your pod measurements
@@ -74,70 +68,38 @@ public class TeleWork extends OpMode {
     @Override
     public void loop() {
         goBildaPinpointDriver.update();
-
-        //pid?
+        driveBase.fieldRelativeDrive(gamepad1);
+//        // Test heading for FOD
+//        double headingDeg = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.DEGREES);
+//        telemetry.addData("Heading", "%.1f°", headingDeg);
+//  test
+//
         if (gamepad1.left_trigger > 0.5) {
             autoRotateActive = true;
-
             LLResult result = limelight3A.getLatestResult();
             if (result != null && result.isValid()) {
                 double tx = result.getTx();
-                tx = tx + 2.5;
+                tx = tx + 12;
 
                 if (Math.abs(tx) < 1.0) {
                     driveBase.autoRotate(0);
-                    integralTx = 0;
-                    lastTxError = 0;
-                    pidTimer.reset();
-                } else {
-
-                    double error = tx;
-                    double dt = pidTimer.time();
-
-
-                    double derivative = (error - lastTxError) / dt;
-
-                    integralTx += error * dt;
-                    integralTx = Math.max(-10, Math.min(10, integralTx));
-
-                    // pid TERMS
-                    double pTerm = kp * error;
-                    double iTerm = ki * integralTx;
-                    double dTerm = kd * derivative;
-
-                    double rotationPower = pTerm + iTerm + dTerm;
-                    rotationPower = Math.max(-1, Math.min(1, rotationPower));
-
+                }
+                else {
+                    double kP = 0.025;
+                    double rotationPower = tx * kP;
+                    rotationPower = Math.max(-0.35, Math.min(0.35, rotationPower));
                     driveBase.autoRotate(rotationPower);
-
-                    lastTxError = error;
-                    pidTimer.reset();
-
-                    // Telemetry
-                    telemetry.addData("tx°", "%.2f", tx);
-                    telemetry.addData("P", "%.3f", pTerm);
-                    telemetry.addData("I", "%.3f", iTerm);
-                    telemetry.addData("D", "%.3f", dTerm);
-                    telemetry.addData("dt", "%.3f", dt);
+                    telemetry.addData("tx°", "%.1f", tx);
                     telemetry.addData("rotPwr", "%.2f", rotationPower);
                 }
             } else {
                 driveBase.autoRotate(0);
-                integralTx = 0;
-                lastTxError = 0;
-                pidTimer.reset();
+                telemetry.addData("Limelight", "No tag");
             }
-        } else {
-            autoRotateActive = false;
-            driveBase.fieldRelativeDrive(gamepad1);
-            integralTx = 0;
-            lastTxError = 0;
-            pidTimer.reset();
         }
 
-
-
-
+//
+//
         //        //auto shoot-------------------------------------------------------------------------
 //        else if (gamepad1.dpad_left) {
 //            shooter.setRevMode(revOn);  // Set direction
@@ -180,31 +142,11 @@ public class TeleWork extends OpMode {
             shooter.stop();
             shooter.setShootCommanded(false);
         }
-//limelight testing---------------------------------------------------------------------------------
-// AUTO SHOOTER AIM - Gamepad2 X (uses ty for distance)
-        if (gamepad1.x) {
-            LLResult result = limelight3A.getLatestResult();
-            if (result != null && result.isValid()) {
-                double ty = result.getTy();
 
-                // Distance estimate from ty (higher ty = closer)
-                double distanceEstimate = 120 - (ty * 8);  // Tune these numbers!
-
-                shooter.updateAimFromVision(ty);
-                shooter.shootslow(distanceEstimate);  // Uses distanceEstimate
-
-                telemetry.addData("Auto Aim", "ON");
-                telemetry.addData("ty°", "%.1f", ty);
-                telemetry.addData("Est Dist", "%.1f in", distanceEstimate);
-                telemetry.addData("AimPos", "%.3f", shooter.getTargetAimPos());
-            }
-        }
-
-//--------------------------------------------------------------------------------------------------
-//// intake-----------------------------------------------------------------------------------------
+//// intake-------------------------------------------------------------------------------------------
         if (gamepad1.right_trigger > 0.5){
 //            if (revOn) {
-                intake.spinIn();
+            intake.spinIn();
 //            }
 //            else {
 //                intake.spinIn();
@@ -214,8 +156,8 @@ public class TeleWork extends OpMode {
             intake.spinStop();
         }
 // roundabout---------------------------------------------------------------------------------------
-        if (gamepad1.dpad_up) {
-                shooter.roundUp();
+        if (gamepad2.dpad_up) {
+            shooter.roundUp();
         }
         else if (gamepad1.dpad_down) {
             shooter.roundDown();
@@ -226,11 +168,11 @@ public class TeleWork extends OpMode {
             goBildaPinpointDriver.setHeading(0, AngleUnit.DEGREES);
         }
         //aiming------------------------------------------------------------------------------------
-        if (gamepad1.dpad_right) {
-            shooter.aimDown();
-        }
-        else if (gamepad1.dpad_left) {
+        if (gamepad2.dpad_right) {
             shooter.aimUp();
+        }
+        else if (gamepad2.dpad_left) {
+            shooter.aimDown();
         }
 
 //--------------------------------------------------------------------------------------------------
@@ -251,4 +193,3 @@ public class TeleWork extends OpMode {
 
 
 }
-
