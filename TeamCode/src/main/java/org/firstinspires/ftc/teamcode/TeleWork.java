@@ -32,11 +32,8 @@ public class TeleWork extends OpMode {
     private double targetHeading = 0.0;  // Goal angle in degrees
     private double ROTATION_KP = 0.015;  // Tune 0.01-0.02
     private boolean autoRotateActive = false;
-    private boolean revOn = false;  // Reverse mode enabled by Y
     private Limelight3A limelight3A = null;
-    boolean prevY = false;
-    boolean prevB = false;
-
+    public static double limelightYawAssist = 0;  // Stored PID yaw
     private double prevTxError = 0;
     private double integralTx = 0;
     private double lastTxError = 0;
@@ -44,6 +41,14 @@ public class TeleWork extends OpMode {
     private double kp = 0.04;
     private double ki = 0.01;
     private double kd = 0.04;
+
+
+//    boolean prevY = false;
+//    boolean prevB = false;
+//    private boolean revOn = false;
+
+
+
 
 
     @Override

@@ -100,12 +100,7 @@ public class Shooter {
         targetRPS = 75;
     }
     public void shootslow(double distanceInches) {
-        if (distanceInches < 60) {  // Close shot
-            targetRPS = 55 + (distanceInches * 0.4);  // Variable 55-80
-            targetRPS = Math.max(55, Math.min(80, targetRPS));
-        } else {
-            targetRPS = 80;  // Far shot full power
-        }
+       targetRPS = 67;
     }
 
 //    0.675
@@ -130,6 +125,7 @@ public class Shooter {
     }
 
     public void roundDown(){
+
         roundabout.setPower(-1);
     }
 
