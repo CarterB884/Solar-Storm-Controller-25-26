@@ -121,28 +121,9 @@ public class Autobluefront extends LinearOpMode {
         frontLeftDrive.setPower(0);
         frontRightDrive.setPower(0);
     }
-    public void autoShoot(double second) {
-        shooter.setPower(-0.71);
-        sleep(3500);
-        roundabout.setPower(-1);
-        sleep(200);
-        roundabout.setPower(0);
-        sleep(2500);
-        roundabout.setPower(-1);
-        sleep(340);
-        roundabout.setPower(0);
-        sleep(2500);
-        roundabout.setPower(-1);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < second)) {
-        }
-        shooter.setPower(0);
-        roundabout.setPower(0);
-    }
     public void forwardAndIntake(double second) {
 
         intake.setPower(1);
-        roundabout.setPower(1);
         backLeftDrive.setPower(FORWARD_SPEED);
         backRightDrive.setPower(FORWARD_SPEED);
         frontLeftDrive.setPower(FORWARD_SPEED);
@@ -185,26 +166,7 @@ public class Autobluefront extends LinearOpMode {
         // Wait for the game to start (driver presses START)
         waitForStart();
 
-        // Step through each leg of the path, ensuring that the OpMode has not been stopped along the way.
 
-
-       goBack(1.75);
-
-       autoShoot(0.5);
-// pick up three more balls
-//       turnL(0.30);
-//
-//       forwardAndIntake(1);
-//
-//       goBack(1.3);
-//
-//       turnR(0.30);
-//
-//       autoShoot(5);
-
-       turnL(0.5);
-
-       goForward(1.3);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();

@@ -36,6 +36,11 @@ public class DriveBase {
     double backLeftPower;
     double backRightPower;
 
+    //auto rotate to april tag----------------------------------------------------------------------
+
+//    public void autoRotate(double rotationPower) {
+//    drive();
+//    }
 
 
     // change---------------------------------------------------------------------------------------
@@ -50,6 +55,7 @@ public class DriveBase {
         if (gamepad.options) {
             goBildaPinpointDriver.recalibrateIMU();
         }
+
 
         double botHeading = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
 
@@ -70,32 +76,40 @@ public class DriveBase {
 
         sendSpeeds();
     }
+    public void autoRotate ( double rotationPower){
+        frontLeftPower = rotationPower;
+        frontRightPower = -rotationPower;
+        backLeftPower = rotationPower;
+        backRightPower = -rotationPower;
+        sendSpeeds();
+    }
+
     //------------------------------- --------------------------------------------------------------
 
 
 
-    public void drive(Gamepad gamepad) {
-        double axial = gamepad.left_stick_y;
-        double lateral = gamepad.left_stick_x;
-        double yaw = gamepad.right_stick_x;
-        double max;
-        frontLeftPower = -axial + lateral + yaw;
-        frontRightPower = -axial - lateral - yaw;
-        backLeftPower = -axial - lateral + yaw;
-        backRightPower = -axial + lateral - yaw;
+    public void fieldRelativeDriveWithYaw(Gamepad gamepad, double yawAssist) {
+        double y = -gamepad.left_stick_y;
+        double x = gamepad.left_stick_x;
+        double rx = gamepad.right_stick_x + yawAssist;  // ADD Limelight yaw!
 
-        max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
-        max = Math.max(max, Math.abs(backLeftPower));
-        max = Math.max(max, Math.abs(backRightPower));
-
-        if (max > 1.0) {
-            frontLeftPower /= max;
-            frontRightPower /= max;
-            backLeftPower /= max;
-            backRightPower /= max;
-
+        if (gamepad.options) {
+            goBildaPinpointDriver.recalibrateIMU();
         }
+
+        double botHeading = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+        rotX = rotX * 1.1;
+
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+        frontLeftPower = (rotY + rotX + rx) / denominator;
+        backLeftPower = (rotY - rotX + rx) / denominator;
+        frontRightPower = (rotY - rotX - rx) / denominator;
+        backRightPower = (rotY + rotX - rx) / denominator;
+
         sendSpeeds();
+
 
     }
 

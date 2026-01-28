@@ -19,7 +19,7 @@ public class Shooter {
     private DcMotorEx shooter2 = null;
     private DcMotor roundabout = null;
 //    private Servo aimLeft = null;
-    private Servo aimRight = null;
+    public Servo aimRight = null;
     public ElapsedTime runtime = null;
     public Telemetry telemetry = null;
     private DistanceSensor ballSensor = null;
@@ -64,8 +64,8 @@ public class Shooter {
 
 
         // Velocity PIDF setup
-        shooter.setVelocityPIDFCoefficients(0.8, 0.09, 0.1, 12.8);
-        shooter2.setVelocityPIDFCoefficients(0.9, 0.09, 0.1, 12.8);
+        shooter.setVelocityPIDFCoefficients(0.9, 0.2, 0.1, 12.8);
+        shooter2.setVelocityPIDFCoefficients(0.9, 0.2, 0.1, 12.8);
 
         this.runtime = runtime;
         this.telemetry = telemetry;
@@ -97,10 +97,10 @@ public class Shooter {
     public double getTargetAimPos() { return targetAimPos; }
 
     public void shoot() {
-        targetRPS = 75;
+        targetRPS = 70;
     }
     public void shootslow(double distanceInches) {
-       targetRPS = 67;
+       targetRPS = 60;
     }
 
 //    0.675

@@ -22,7 +22,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 
 
 
-@TeleOp(name="Robot: TeleWork", group="Robot")
+@TeleOp(name="TeleWork", group="Robot")
 public class TeleWork extends OpMode {
     private DriveBase driveBase = null;
     private Shooter shooter = null;
@@ -34,13 +34,12 @@ public class TeleWork extends OpMode {
     private boolean autoRotateActive = false;
     private Limelight3A limelight3A = null;
     public static double limelightYawAssist = 0;  // Stored PID yaw
-    private double prevTxError = 0;
-    private double integralTx = 0;
-    private double lastTxError = 0;
+
     private ElapsedTime pidTimer = new ElapsedTime();
-    private double kp = 0.04;
-    private double ki = 0.01;
-    private double kd = 0.04;
+    private double kp = 0.035;  // Slightly lower P (less aggressive)
+    private double ki = 0.008;  // Lower I (less windup)
+    private double kd = 0.08;
+
 
 
 //    boolean prevY = false;
@@ -83,62 +82,32 @@ public class TeleWork extends OpMode {
         //pid?
         if (gamepad1.left_trigger > 0.5) {
             autoRotateActive = true;
-
             LLResult result = limelight3A.getLatestResult();
-            if (result != null && result.isValid()) {
-                double tx = result.getTx();
-                tx = tx + 2.5;
 
-                if (Math.abs(tx) < 1.0) {
-                    driveBase.autoRotate(0);
-                    integralTx = 0;
-                    lastTxError = 0;
-                    pidTimer.reset();
+            double yawAssist = 0.0;
+
+            if (result != null && result.isValid()) {
+                double tx = result.getTx() + 4;
+
+
+                if (Math.abs(tx) < 3) {
+                    yawAssist = 0.0;
                 } else {
 
-                    double error = tx;
-                    double dt = pidTimer.time();
-
-
-                    double derivative = (error - lastTxError) / dt;
-
-                    integralTx += error * dt;
-                    integralTx = Math.max(-10, Math.min(10, integralTx));
-
-                    // pid TERMS
-                    double pTerm = kp * error;
-                    double iTerm = ki * integralTx;
-                    double dTerm = kd * derivative;
-
-                    double rotationPower = pTerm + iTerm + dTerm;
-                    rotationPower = Math.max(-1, Math.min(1, rotationPower));
-
-                    driveBase.autoRotate(rotationPower);
-
-                    lastTxError = error;
-                    pidTimer.reset();
-
-                    // Telemetry
-                    telemetry.addData("tx°", "%.2f", tx);
-                    telemetry.addData("P", "%.3f", pTerm);
-                    telemetry.addData("I", "%.3f", iTerm);
-                    telemetry.addData("D", "%.3f", dTerm);
-                    telemetry.addData("dt", "%.3f", dt);
-                    telemetry.addData("rotPwr", "%.2f", rotationPower);
+                    yawAssist = tx * 0.045;
+                    yawAssist = Math.max(-0.6, Math.min(0.6, yawAssist));
                 }
-            } else {
-                driveBase.autoRotate(0);
-                integralTx = 0;
-                lastTxError = 0;
-                pidTimer.reset();
             }
+
+            driveBase.fieldRelativeDriveWithYaw(gamepad1, yawAssist);
+
         } else {
             autoRotateActive = false;
             driveBase.fieldRelativeDrive(gamepad1);
-            integralTx = 0;
-            lastTxError = 0;
-            pidTimer.reset();
         }
+
+
+
 
 
 
@@ -239,7 +208,9 @@ public class TeleWork extends OpMode {
         }
 
 //--------------------------------------------------------------------------------------------------
-//
+        if (gamepad1.b) {
+            shooter.aimRight.setPosition(0.5);
+        }
 //
 //        //resets heading-----------------------------------------------------------------------
 //        telemetry.addData("Mode", autoRotateActive ? "AUTO-ROTATE" : "MANUAL");
