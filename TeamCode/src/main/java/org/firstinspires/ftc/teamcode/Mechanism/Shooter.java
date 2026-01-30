@@ -32,8 +32,8 @@ public class Shooter {
     private boolean ballWasSeen = false;
     private ElapsedTime packTimer = new ElapsedTime();
     private double targetAimPos = 0.5;
-    private static final double AIM_MIN = 0.35;  //testing parameters
-    private static final double AIM_MAX = 0.65;
+    private static final double AIM_MIN = 0.4;
+    private static final double AIM_MAX = 0.55;
 
 
 
@@ -52,7 +52,7 @@ public class Shooter {
 
 //        aimLeft = hardwareMap.get(Servo.class, Constants.AIM_LEFT);
         aimRight = hardwareMap.get(Servo.class, Constants.AIM_RIGHT);
-        aimRight.setPosition(0.5);
+        aimRight.setPosition(0.4);
 //        aimLeft.setDirection(Servo.Direction.FORWARD);
         aimRight.setDirection(Servo.Direction.REVERSE);
         //encoders----------------------------------------------------------------------------------
@@ -75,8 +75,8 @@ public class Shooter {
     private int prevPos = 0;
     private double prevTime = 0;
     public double targetRPS = 0;
-    private static final double SERVO_SPEED = 0.005;
-    private double currentServoPos = 0.4;
+    private static final double SERVO_SPEED = 0.05;
+    private double currentServoPos = 0.5;
     public void setRevMode(boolean mode) { revMode = mode; }
     public void updateAimFromVision(double ty) {
         // Far preset = 0.5 (your current default)
@@ -89,7 +89,7 @@ public class Shooter {
             closeAdjust = 0.02;  // Very slight
         }
 
-        targetAimPos = 0.5 + closeAdjust;  // Far shots = no change
+        targetAimPos = 0.4 + closeAdjust;  // Far shots = no change
         targetAimPos = Math.max(AIM_MIN, Math.min(AIM_MAX, targetAimPos));
         aimRight.setPosition(targetAimPos);
     }
@@ -155,13 +155,15 @@ public class Shooter {
             rpsTimer.reset();
         }
 
-        rpsReady = (targetRPS > 0.5) && (Math.abs(shooter.getVelocity()) > (targetRPS * 28 * 0.98));
+        rpsReady = (targetRPS > 0.5) && (Math.abs(shooter.getVelocity()) > (targetRPS * 28 * 0.99));
 
         // BOOST MODE: Not ready after 6 seconds
         boolean boostMode = (targetRPS > 0.5) && !rpsReady && (rpsTimer.time() > 6.0);
         if (boostMode) {
             targetAimPos = Math.min(currentServoPos + 0.08, AIM_MAX);
             aimRight.setPosition(targetAimPos);
+        } else {
+            currentServoPos = 0.5;
         }
 
         if (rpsReady && shootCommanded && !indexing) {

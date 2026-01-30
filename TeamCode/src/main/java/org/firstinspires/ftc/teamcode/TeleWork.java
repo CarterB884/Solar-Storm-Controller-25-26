@@ -29,15 +29,15 @@ public class TeleWork extends OpMode {
     private Intake intake = null;
     public ElapsedTime runtime = new ElapsedTime();
     private GoBildaPinpointDriver goBildaPinpointDriver = null;
-    private double targetHeading = 0.0;  // Goal angle in degrees
-    private double ROTATION_KP = 0.015;  // Tune 0.01-0.02
+    private double targetHeading = 0.0;
+    private double ROTATION_KP = 0.015;
     private boolean autoRotateActive = false;
     private Limelight3A limelight3A = null;
     public static double limelightYawAssist = 0;  // Stored PID yaw
 
     private ElapsedTime pidTimer = new ElapsedTime();
-    private double kp = 0.035;  // Slightly lower P (less aggressive)
-    private double ki = 0.008;  // Lower I (less windup)
+    private double kp = 0.035;
+    private double ki = 0.008;
     private double kd = 0.08;
 
 
@@ -85,11 +85,10 @@ public class TeleWork extends OpMode {
 
             if (result != null && result.isValid()) {
                 double tx = result.getTx();
-                tx = tx - 7;
+                tx = tx - 4;
 
-                // **DRIVE WHILE AIMING** - use field relative + auto rotation
                 if (Math.abs(tx) < 1.0) {
-                    driveBase.fieldRelativeDrive(gamepad1);  // Normal drive when centered
+                    driveBase.fieldRelativeDrive(gamepad1);
                 } else {
                     double kP = 0.025;
                     double rotationPower = tx * kP;
@@ -101,7 +100,7 @@ public class TeleWork extends OpMode {
                     telemetry.addData("rotPwr", "%.2f", rotationPower);
                 }
             } else {
-                driveBase.fieldRelativeDrive(gamepad1);  // Drive normally when no tag
+                driveBase.fieldRelativeDrive(gamepad1);
                 telemetry.addData("Limelight", "No tag");
             }
         } else {
@@ -206,10 +205,10 @@ public class TeleWork extends OpMode {
             goBildaPinpointDriver.setHeading(0, AngleUnit.DEGREES);
         }
         //aiming------------------------------------------------------------------------------------
-        if (gamepad1.dpad_right) {
+        if (gamepad1.dpadRightWasPressed()) {
             shooter.aimDown();
         }
-        else if (gamepad1.dpad_left) {
+        else if (gamepad1.dpadLeftWasPressed()) {
             shooter.aimUp();
         }
 

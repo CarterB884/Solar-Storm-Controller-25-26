@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Auto;
 
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -25,6 +26,7 @@ public class Autobluefront extends OpMode {
     public DcMotor backLeftDrive = null;
     public DcMotor frontRightDrive = null;
     public DcMotor backRightDrive = null;
+    private double currentServoPos = 0.5;
 
     private int autoStep = 0;
 
@@ -51,7 +53,39 @@ public class Autobluefront extends OpMode {
         backLeftDrive = hardwareMap.get(DcMotor.class, Constants.BACK_LEFT);
         backRightDrive = hardwareMap.get(DcMotor.class, Constants.BACK_RIGHT);
     }
-    // ADD THESE FUNCTIONS TO YOUR Autobluefront CLASS (keep everything else exactly the same)
+
+
+    private void autoRotateToTag() {
+        if (limelight3A == null) {
+            stopDrive();
+            return;
+        }
+
+        LLResult result = limelight3A.getLatestResult();
+
+
+        if (result != null && result.isValid()) {
+            double tx = result.getTx();
+            tx = tx - 7;
+
+            if (Math.abs(tx) < 1.0) {
+                stopDrive();
+                telemetry.addData("Tag", "Centered!");
+            } else {
+                double kP = 0.025;
+                double rotationPower = tx * kP;
+                rotationPower = Math.max(-0.35, Math.min(0.35, rotationPower));
+
+                driveBase.autoRotate(rotationPower);
+                telemetry.addData("tx°", "%.1f", tx);
+                telemetry.addData("rotPwr", "%.2f", rotationPower);
+            }
+        } else {
+            telemetry.addData("Limelight", "No valid tag");
+        }
+    }
+
+
 
     private void shootslow(double distanceInches) {
         shooter.shootslow(distanceInches);
@@ -102,8 +136,8 @@ public class Autobluefront extends OpMode {
 
         switch (autoStep) {
             case 0:
-                if (runtime.seconds() < 1.3) {
-                    gobackward(1.3);
+                if (runtime.seconds() < 1.5) {
+                    gobackward(1.5);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -112,7 +146,18 @@ public class Autobluefront extends OpMode {
                 break;
 
             case 1:
-                if (runtime.seconds() < 7.0) {
+                if (runtime.seconds() < 3.0) {
+                    autoRotateToTag();
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+
+
+            case 2:
+                if (runtime.seconds() < 4) {
                     shootslow(60);
                     shooter.setShootCommanded(true);
                 } else {
@@ -123,7 +168,7 @@ public class Autobluefront extends OpMode {
                 }
                 break;
 
-            case 2:
+            case 3:
                 if (runtime.seconds() < 0.495) {
                     turnL(0.495);
                 } else {
@@ -133,7 +178,7 @@ public class Autobluefront extends OpMode {
                 }
                 break;
 
-            case 3:
+            case 4:
                 if (runtime.seconds() < 1.5) {
                     forwardandintake(1.5);
                 } else {
@@ -143,7 +188,7 @@ public class Autobluefront extends OpMode {
                     autoStep++;
                 }
                 break;
-            case 4:
+            case 5:
                 if (runtime.seconds() < 1.5) {
                     gobackward(1.5);
                 } else {
@@ -153,7 +198,16 @@ public class Autobluefront extends OpMode {
                 }
                 break;
 
-            case 5:
+            case 6:
+                if (runtime.seconds() < 0.495) {
+                    turnR(0.495);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+
+            case 7:
                 if (runtime.seconds() < 1.5) {
                     shootslow(60);
                     shooter.setShootCommanded(true);
