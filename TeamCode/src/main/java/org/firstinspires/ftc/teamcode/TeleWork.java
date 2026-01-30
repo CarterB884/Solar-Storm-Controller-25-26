@@ -79,32 +79,38 @@ public class TeleWork extends OpMode {
     public void loop() {
         goBildaPinpointDriver.update();
 
-        //pid?
         if (gamepad1.left_trigger > 0.5) {
             autoRotateActive = true;
             LLResult result = limelight3A.getLatestResult();
 
-            double yawAssist = 0.0;
-
             if (result != null && result.isValid()) {
-                double tx = result.getTx() + 4;
+                double tx = result.getTx();
+                tx = tx - 7;
 
-
-                if (Math.abs(tx) < 3) {
-                    yawAssist = 0.0;
+                // **DRIVE WHILE AIMING** - use field relative + auto rotation
+                if (Math.abs(tx) < 1.0) {
+                    driveBase.fieldRelativeDrive(gamepad1);  // Normal drive when centered
                 } else {
+                    double kP = 0.025;
+                    double rotationPower = tx * kP;
+                    rotationPower = Math.max(-0.35, Math.min(0.35, rotationPower));
 
-                    yawAssist = tx * 0.045;
-                    yawAssist = Math.max(-0.6, Math.min(0.6, yawAssist));
+                    // **COMBINES stick driving + auto rotation**
+                    driveBase.fieldRelativeDriveWithYaw(gamepad1, rotationPower);
+                    telemetry.addData("tx°", "%.1f", tx);
+                    telemetry.addData("rotPwr", "%.2f", rotationPower);
                 }
+            } else {
+                driveBase.fieldRelativeDrive(gamepad1);  // Drive normally when no tag
+                telemetry.addData("Limelight", "No tag");
             }
-
-            driveBase.fieldRelativeDriveWithYaw(gamepad1, yawAssist);
-
         } else {
             autoRotateActive = false;
             driveBase.fieldRelativeDrive(gamepad1);
         }
+
+
+
 
 
 

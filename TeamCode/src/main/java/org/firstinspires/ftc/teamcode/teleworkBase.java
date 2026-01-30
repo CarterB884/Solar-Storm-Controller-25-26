@@ -79,7 +79,7 @@ public class teleworkBase extends OpMode {
             LLResult result = limelight3A.getLatestResult();
             if (result != null && result.isValid()) {
                 double tx = result.getTx();
-                tx = tx + 12;
+                tx = tx - 1;
 
                 if (Math.abs(tx) < 1.0) {
                     driveBase.autoRotate(0);

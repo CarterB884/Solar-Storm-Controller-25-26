@@ -12,10 +12,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class DriveBase {
 
-    private DcMotor frontLeftDrive = null;
-    private DcMotor backLeftDrive = null;
-    private DcMotor frontRightDrive = null;
-    private DcMotor backRightDrive = null;
+    public DcMotor frontLeftDrive = null;
+    public DcMotor backLeftDrive = null;
+    public DcMotor frontRightDrive = null;
+    public DcMotor backRightDrive = null;
     private GoBildaPinpointDriver goBildaPinpointDriver = null;
 
     public DriveBase(HardwareMap hardwareMap, GoBildaPinpointDriver goBildaPinpointDriver){
@@ -91,7 +91,7 @@ public class DriveBase {
     public void fieldRelativeDriveWithYaw(Gamepad gamepad, double yawAssist) {
         double y = -gamepad.left_stick_y;
         double x = gamepad.left_stick_x;
-        double rx = gamepad.right_stick_x + yawAssist;  // ADD Limelight yaw!
+        double rx = gamepad.right_stick_x + yawAssist;
 
         if (gamepad.options) {
             goBildaPinpointDriver.recalibrateIMU();

@@ -24,11 +24,11 @@ public class Shooter {
     public Telemetry telemetry = null;
     private DistanceSensor ballSensor = null;
     private boolean ballInPosition = false;    // Ball ready?
-    private boolean rpsReady = false;         // Shooter speed ready?
+    private boolean rpsReady = false;
     private ElapsedTime indexTimer = new ElapsedTime();
     private ElapsedTime rpsTimer = new ElapsedTime();
     private boolean indexing = false;
-    private boolean shootCommanded = false;
+    public boolean shootCommanded = false;
     private boolean ballWasSeen = false;
     private ElapsedTime packTimer = new ElapsedTime();
     private double targetAimPos = 0.5;
@@ -57,9 +57,9 @@ public class Shooter {
         aimRight.setDirection(Servo.Direction.REVERSE);
         //encoders----------------------------------------------------------------------------------
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // Velocity PID mode
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // Velocity PID mode
+        shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
 
@@ -141,6 +141,9 @@ public class Shooter {
         shootCommanded = commanded;
     }
 
+
+
+
     public void updateVelocity() {
         shooter.setVelocity(targetRPS * 28);
         shooter2.setVelocity(targetRPS * 28);
@@ -148,7 +151,6 @@ public class Shooter {
         double sensorDistance = ballSensor.getDistance(DistanceUnit.INCH);
         ballInPosition = sensorDistance < Constants.BALL_PRESENT_DISTANCE;  // < 4"
 
-//        // RESET TIMER when new target set (shooter slow)
         if (!rpsReady && shootCommanded && ballInPosition) {
             rpsTimer.reset();
         }
@@ -158,7 +160,7 @@ public class Shooter {
         // BOOST MODE: Not ready after 6 seconds
         boolean boostMode = (targetRPS > 0.5) && !rpsReady && (rpsTimer.time() > 6.0);
         if (boostMode) {
-            targetAimPos = Math.min(currentServoPos + 0.08, AIM_MAX);  // Servo UP 5°
+            targetAimPos = Math.min(currentServoPos + 0.08, AIM_MAX);
             aimRight.setPosition(targetAimPos);
         }
 
@@ -234,8 +236,5 @@ public class Shooter {
 //        }
     }
 
-    private double speedFromTagDist(double ty) {
-        double distFactor = Math.cos((ty+30)*Math.PI/180);
-        return distFactor * 0.6 + 0.3;
     }
-}
+

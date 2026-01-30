@@ -10,15 +10,15 @@ public class Constants {
     public static final String BACK_RIGHT = "br";
     public static final String INTAKE = "in";
     public static final String ROUNDABOUT = "round";
-    public static final String ODOMETRY = "odey";
-    public static final String SHOOTER2 = "shooter2";  // Second flywheel motor
-    public static final String AIM_LEFT = "aimLeft";   // Left torque servo
-    public static final String AIM_RIGHT = "aimRight"; // Right torque servo
-    public static final String BALL_SENSOR = "ballSensor";  // Distance sensor name
-    public static final double BALL_PRESENT_DISTANCE = 3;  // Inches = ball detected
-    private boolean shootCommanded = false;    // Driver is holding shoot
-    private boolean ballWasSeen = false;       // For intake packing timing
+    public static final String ODOMETRY = "odey";  // Your GoBilda
+    public static final String SHOOTER2 = "shooter2";
+    public static final String AIM_LEFT = "aimLeft";
+    public static final String AIM_RIGHT = "aimRight";
+    public static final String BALL_SENSOR = "ballSensor";
+    public static final double BALL_PRESENT_DISTANCE = 3;
+    public static final double targetRPS = 0;
+
+    private boolean shootCommanded = false;
+    private boolean ballWasSeen = false;
     private ElapsedTime packTimer = new ElapsedTime();
-
-
 }
