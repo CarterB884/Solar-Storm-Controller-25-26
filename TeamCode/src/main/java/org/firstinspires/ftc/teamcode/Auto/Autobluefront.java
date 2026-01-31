@@ -32,7 +32,6 @@ public class Autobluefront extends OpMode {
 
     @Override
     public void init() {
-        // ALL YOUR ORIGINAL INIT CODE - UNCHANGED
         goBildaPinpointDriver = hardwareMap.get(GoBildaPinpointDriver.class, Constants.ODOMETRY);
         goBildaPinpointDriver.setEncoderResolution(
                 GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
@@ -115,6 +114,9 @@ public class Autobluefront extends OpMode {
     private void moveL(double seconds){
         setDrivePower(-0.6, 0.6, 0.6, -0.6);
     }
+    private void moveR(double seconds){
+        setDrivePower(0.6, -0.6, -0.6, 0.6);
+    }
     private void stopDrive() {
         setDrivePower(0, 0, 0, 0);
     }
@@ -170,12 +172,6 @@ public class Autobluefront extends OpMode {
                 if (runtime.seconds() < 5) {
                     shooter.prepareSlowShot(60);
 
-                    // 🔥 ONLY SHOOT WHEN READY
-//                    if (!shooter.rpsReady) {
-//                        telemetry.addData("Waiting", "Flywheel speed...");
-//                    } else {
-//                        telemetry.addData("RPS Ready", "SHOOTING!");
-//                    }
                 } else {
                     shooter.setFlywheelSpeed0();
                     shooter.setShootCommanded(false);
@@ -246,13 +242,6 @@ public class Autobluefront extends OpMode {
             case 10:
                 if (runtime.seconds() < 5) {
                     shooter.prepareSlowShot(60);
-
-                    // 🔥 ONLY SHOOT WHEN READY
-//                    if (!shooter.rpsReady) {
-//                        telemetry.addData("Waiting", "Flywheel speed...");
-//                    } else {
-//                        telemetry.addData("RPS Ready", "SHOOTING!");
-//                    }
                 } else {
                     shooter.setFlywheelSpeed0();
                     shooter.setShootCommanded(false);
@@ -260,6 +249,14 @@ public class Autobluefront extends OpMode {
                     autoStep++;
                 }
                 break;
+            case 11:
+                if (runtime.seconds() < 1.2) {
+                    moveL(1.2);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
         }
         shooter.update();
     }

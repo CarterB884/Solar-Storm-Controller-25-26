@@ -103,6 +103,10 @@ public class Shooter {
        targetRPS = 60;
        shootCommanded = true;
     }
+    public void prepareooperSlowShot(double distanceInches) {
+        targetRPS = 57.5;
+        shootCommanded = true;
+    }
 
 //    0.675
 
