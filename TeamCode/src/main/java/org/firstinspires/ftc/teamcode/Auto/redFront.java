@@ -12,8 +12,8 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Autonomous(name="Robot: Auto red front", group="Robot")  // ← Changed name
-public class redFront extends OpMode {  // ← Changed class name
+@Autonomous(name="Robot: Auto Red front", group="Robot")
+public class redFront extends OpMode {
 
     private DriveBase driveBase = null;
     private Shooter shooter = null;
@@ -25,12 +25,14 @@ public class redFront extends OpMode {  // ← Changed class name
     public DcMotor backLeftDrive = null;
     public DcMotor frontRightDrive = null;
     public DcMotor backRightDrive = null;
+    private double currentServoPos = 0.5;
+    //private boolean rpsReady = false;
 
     private int autoStep = 0;
 
     @Override
     public void init() {
-        // IDENTICAL init - nothing changes for red
+        // ALL YOUR ORIGINAL INIT CODE - UNCHANGED
         goBildaPinpointDriver = hardwareMap.get(GoBildaPinpointDriver.class, Constants.ODOMETRY);
         goBildaPinpointDriver.setEncoderResolution(
                 GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
@@ -52,17 +54,49 @@ public class redFront extends OpMode {  // ← Changed class name
         backRightDrive = hardwareMap.get(DcMotor.class, Constants.BACK_RIGHT);
     }
 
-    // IDENTICAL FUNCTIONS - nothing changes
-    private void shootslow(double distanceInches) {
-        shooter.prepareSlowShot(distanceInches);
-        shooter.setShootCommanded(true);
-    }
+
+    /*private void autoRotateToTag() {
+        if (limelight3A == null) {
+            stopDrive();
+            return;
+        }
+
+        LLResult result = limelight3A.getLatestResult();
+
+
+        if (result != null && result.isValid()) {
+            double tx = result.getTx();
+            tx = tx - 7;
+
+            if (Math.abs(tx) < 1.0) {
+                stopDrive();
+                telemetry.addData("Tag", "Centered!");
+            } else {
+                double kP = 0.025;
+                double rotationPower = tx * kP;
+                rotationPower = Math.max(-0.35, Math.min(0.35, rotationPower));
+
+                driveBase.autoRotate(rotationPower);
+                telemetry.addData("tx°", "%.1f", tx);
+                telemetry.addData("rotPwr", "%.2f", rotationPower);
+            }
+        } else {
+            telemetry.addData("Limelight", "No valid tag");
+        }
+    }*/
+
+
+
+
 
     private void forwardandintake(double seconds) {
         intake.spinIn();
         setDrivePower(0.5, 0.5, 0.5, 0.5);
+        // You handle timing in autoStep
     }
-
+    private void intakeAuto(double seconds){
+        intake.spinIn();
+    }
     private void goforward(double seconds) {
         setDrivePower(0.5, 0.5, 0.5, 0.5);
     }
@@ -78,10 +112,17 @@ public class redFront extends OpMode {  // ← Changed class name
     private void turnR(double seconds) {
         setDrivePower(0.3, 0.3, -0.3, -0.3);
     }
+    private void moveL(double seconds){
+        setDrivePower(-0.6, 0.6, 0.6, -0.6);
+    }
 
+    private void moveR(double seconds){
+        setDrivePower(0.6, -0.6, -0.6, 0.6);
+    }
     private void stopDrive() {
         setDrivePower(0, 0, 0, 0);
     }
+
 
     @Override
     public void start() {
@@ -96,12 +137,31 @@ public class redFront extends OpMode {  // ← Changed class name
         if (goBildaPinpointDriver != null) {
             goBildaPinpointDriver.update();
         }
-        shooter.update();
+
 
         switch (autoStep) {
             case 0:
-                if (runtime.seconds() < 1.3) {
-                    gobackward(1.3);  // Same - backs out of start line
+                shooter.aimRight.setPosition(0.5);
+                if (runtime.seconds() < 1.45) {
+                    gobackward(1.45);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+            case 1:
+                if (runtime.seconds() < 0.25){
+                    moveR(0.25);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+            case 2:
+                if (runtime.seconds() < 0.05) {
+                    turnL(0.05);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -109,9 +169,17 @@ public class redFront extends OpMode {  // ← Changed class name
                 }
                 break;
 
-            case 1:
-                if (runtime.seconds() < 7.0) {
-                    shootslow(60);
+
+            case 3:  // 3 BALLS - WAIT FOR SPEED - Commented out for now so I don't have to worry about shooting
+                if (runtime.seconds() < 5) {
+                    shooter.prepareSlowShot(60);
+
+                    // 🔥 ONLY SHOOT WHEN READY
+//                    if (!shooter.rpsReady) {
+//                        telemetry.addData("Waiting", "Flywheel speed...");
+//                    } else {
+//                        telemetry.addData("RPS Ready", "SHOOTING!");
+//                    }
                 } else {
                     shooter.setFlywheelSpeed0();
                     shooter.setShootCommanded(false);
@@ -120,30 +188,9 @@ public class redFront extends OpMode {  // ← Changed class name
                 }
                 break;
 
-            case 2:
-                if (runtime.seconds() < 0.495) {
-                    turnR(0.495);  // ← MIRROR: Blue turnL → Red turnR
-                } else {
-                    stopDrive();
-                    runtime.reset();
-                    autoStep++;
-                }
-                break;
-
-            case 3:
-                if (runtime.seconds() < 1.5) {
-                    forwardandintake(1.5);  // Same
-                } else {
-                    intake.spinStop();
-                    stopDrive();
-                    runtime.reset();
-                    autoStep++;
-                }
-                break;
-
             case 4:
-                if (runtime.seconds() < 1.5) {
-                    gobackward(1.5);  // Same
+                if (runtime.seconds() < 0.6) {
+                    turnR(0.6);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -152,8 +199,64 @@ public class redFront extends OpMode {  // ← Changed class name
                 break;
 
             case 5:
-                if (runtime.seconds() < 1.5) {
-                    shootslow(60);  // Same
+                if (runtime.seconds() < 0.62){
+                    moveR(0.62);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+
+            case 6:
+                if (runtime.seconds() < 1.6) {
+                    forwardandintake(1.6);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+
+            case 7:
+                if (runtime.seconds() < .5) {
+                    intakeAuto(.5);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+
+            case 8:
+                if (runtime.seconds() < 1.6) {
+                    gobackward(1.6);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+
+            case 9:
+                if (runtime.seconds() < 0.5) {
+                    turnL(0.5);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+
+            case 10:
+                if (runtime.seconds() < 5) {
+                    shooter.prepareSlowShot(60);
+
+                    // 🔥 ONLY SHOOT WHEN READY
+//                    if (!shooter.rpsReady) {
+//                        telemetry.addData("Waiting", "Flywheel speed...");
+//                    } else {
+//                        telemetry.addData("RPS Ready", "SHOOTING!");
+//                    }
                 } else {
                     shooter.setFlywheelSpeed0();
                     shooter.setShootCommanded(false);
@@ -162,15 +265,16 @@ public class redFront extends OpMode {  // ← Changed class name
                 }
                 break;
         }
-
-        telemetry.addData("Auto Step", autoStep);
-        telemetry.update();
+        shooter.update();
     }
 
+    // YOUR ORIGINAL FUNCTIONS - BULLETPROOF VERSION
     private void setDrivePower(double fl, double bl, double fr, double br) {
+        // DIRECT MOTOR CONTROL - BYPASSES ALL DriveBase PROBLEMS
         frontLeftDrive.setPower(fl);
         backLeftDrive.setPower(bl);
         frontRightDrive.setPower(fr);
         backRightDrive.setPower(br);
     }
+
 }
