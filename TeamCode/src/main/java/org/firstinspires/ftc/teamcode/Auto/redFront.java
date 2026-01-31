@@ -12,7 +12,7 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Autonomous(name="Robot: Auto Red front", group="Robot")
+@Autonomous(name="Robot: Auto red front", group="Robot")
 public class redFront extends OpMode {
 
     private DriveBase driveBase = null;
@@ -115,7 +115,6 @@ public class redFront extends OpMode {
     private void moveL(double seconds){
         setDrivePower(-0.6, 0.6, 0.6, -0.6);
     }
-
     private void moveR(double seconds){
         setDrivePower(0.6, -0.6, -0.6, 0.6);
     }
@@ -141,9 +140,9 @@ public class redFront extends OpMode {
 
         switch (autoStep) {
             case 0:
-                shooter.aimRight.setPosition(0.5);
-                if (runtime.seconds() < 1.45) {
-                    gobackward(1.45);
+                shooter.aimRight.setPosition(0.52);
+                if (runtime.seconds() < 1.55) {
+                    gobackward(1.55);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -172,7 +171,7 @@ public class redFront extends OpMode {
 
             case 3:  // 3 BALLS - WAIT FOR SPEED - Commented out for now so I don't have to worry about shooting
                 if (runtime.seconds() < 5) {
-                    shooter.prepareSlowShot(60);
+                    shooter.prepareVerySlowShot();
 
                     // 🔥 ONLY SHOOT WHEN READY
 //                    if (!shooter.rpsReady) {
@@ -199,8 +198,8 @@ public class redFront extends OpMode {
                 break;
 
             case 5:
-                if (runtime.seconds() < 0.62){
-                    moveR(0.62);
+                if (runtime.seconds() < 0.2){
+                    moveR(0.2);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -209,8 +208,8 @@ public class redFront extends OpMode {
                 break;
 
             case 6:
-                if (runtime.seconds() < 1.6) {
-                    forwardandintake(1.6);
+                if (runtime.seconds() < 1.5) {
+                    forwardandintake(1.5);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -229,8 +228,8 @@ public class redFront extends OpMode {
                 break;
 
             case 8:
-                if (runtime.seconds() < 1.6) {
-                    gobackward(1.6);
+                if (runtime.seconds() < 1.45) {
+                    gobackward(1.45);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -239,8 +238,9 @@ public class redFront extends OpMode {
                 break;
 
             case 9:
-                if (runtime.seconds() < 0.5) {
-                    turnL(0.5);
+                shooter.aimRight.setPosition(0.52);
+                if (runtime.seconds() < 0.49) {
+                    turnL(0.49);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -248,8 +248,11 @@ public class redFront extends OpMode {
                 }
 
             case 10:
+
                 if (runtime.seconds() < 5) {
-                    shooter.prepareSlowShot(60);
+
+
+                    shooter.prepareVerySlowShot();
 
                     // 🔥 ONLY SHOOT WHEN READY
 //                    if (!shooter.rpsReady) {
@@ -264,6 +267,14 @@ public class redFront extends OpMode {
                     autoStep++;
                 }
                 break;
+            case 11:
+                if (runtime.seconds() < 0.59) {
+                    moveR(0.5);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
         }
         shooter.update();
     }

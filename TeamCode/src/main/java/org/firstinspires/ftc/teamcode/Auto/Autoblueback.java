@@ -12,7 +12,7 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Autonomous(name="Robot: Auto red front", group="Robot")  // ← Changed name
+@Autonomous(name="Robot: Auto blue back", group="Robot")  // ← Changed name
 public class Autoblueback extends OpMode {  // ← Changed class name
 
     private DriveBase driveBase = null;
