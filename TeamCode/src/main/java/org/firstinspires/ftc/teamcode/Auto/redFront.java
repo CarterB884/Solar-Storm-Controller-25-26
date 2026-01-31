@@ -54,7 +54,7 @@ public class redFront extends OpMode {  // ← Changed class name
 
     // IDENTICAL FUNCTIONS - nothing changes
     private void shootslow(double distanceInches) {
-        shooter.shootslow(distanceInches);
+        shooter.prepareSlowShot(distanceInches);
         shooter.setShootCommanded(true);
     }
 
@@ -96,7 +96,7 @@ public class redFront extends OpMode {  // ← Changed class name
         if (goBildaPinpointDriver != null) {
             goBildaPinpointDriver.update();
         }
-        shooter.updateVelocity();
+        shooter.update();
 
         switch (autoStep) {
             case 0:
@@ -113,7 +113,7 @@ public class redFront extends OpMode {  // ← Changed class name
                 if (runtime.seconds() < 7.0) {
                     shootslow(60);
                 } else {
-                    shooter.stop();
+                    shooter.setFlywheelSpeed0();
                     shooter.setShootCommanded(false);
                     runtime.reset();
                     autoStep++;
@@ -155,7 +155,7 @@ public class redFront extends OpMode {  // ← Changed class name
                 if (runtime.seconds() < 1.5) {
                     shootslow(60);  // Same
                 } else {
-                    shooter.stop();
+                    shooter.setFlywheelSpeed0();
                     shooter.setShootCommanded(false);
                     runtime.reset();
                     autoStep++;

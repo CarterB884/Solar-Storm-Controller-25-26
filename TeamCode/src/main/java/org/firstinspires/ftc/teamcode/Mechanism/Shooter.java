@@ -7,11 +7,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.SampleRevBlinkinLedDriver;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Constants;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 //
 public class Shooter {
@@ -24,7 +23,7 @@ public class Shooter {
     public Telemetry telemetry = null;
     private DistanceSensor ballSensor = null;
     private boolean ballInPosition = false;    // Ball ready?
-    private boolean rpsReady = false;
+    public boolean rpsReady = false;
     private ElapsedTime indexTimer = new ElapsedTime();
     private ElapsedTime rpsTimer = new ElapsedTime();
     private boolean indexing = false;
@@ -52,7 +51,7 @@ public class Shooter {
 
 //        aimLeft = hardwareMap.get(Servo.class, Constants.AIM_LEFT);
         aimRight = hardwareMap.get(Servo.class, Constants.AIM_RIGHT);
-        aimRight.setPosition(0.4);
+        aimRight.setPosition(0.5);
 //        aimLeft.setDirection(Servo.Direction.FORWARD);
         aimRight.setDirection(Servo.Direction.REVERSE);
         //encoders----------------------------------------------------------------------------------
@@ -96,11 +95,13 @@ public class Shooter {
 
     public double getTargetAimPos() { return targetAimPos; }
 
-    public void shoot() {
+    public void prepareShot() {
         targetRPS = 70;
+        shootCommanded = true;
     }
-    public void shootslow(double distanceInches) {
+    public void prepareSlowShot(double distanceInches) {
        targetRPS = 60;
+       shootCommanded = true;
     }
 
 //    0.675
@@ -133,8 +134,9 @@ public class Shooter {
         roundabout.setPower(0);
     }
 
-    public void stop() {
+    public void setFlywheelSpeed0() {
         targetRPS = 0;
+        shootCommanded = false;
     }
 
     public void setShootCommanded(boolean commanded) {
@@ -144,18 +146,20 @@ public class Shooter {
 
 
 
-    public void updateVelocity() {
+    public void update() {
+        // Set shooter velocity
         shooter.setVelocity(targetRPS * 28);
         shooter2.setVelocity(targetRPS * 28);
 
+        // Check if ball is in position to shoot
         double sensorDistance = ballSensor.getDistance(DistanceUnit.INCH);
         ballInPosition = sensorDistance < Constants.BALL_PRESENT_DISTANCE;  // < 4"
 
+        // Reset timer between shots
         if (!rpsReady && shootCommanded && ballInPosition) {
             rpsTimer.reset();
         }
-
-        rpsReady = (targetRPS > 0.5) && (Math.abs(shooter.getVelocity()) > (targetRPS * 28 * 0.99));
+        rpsReady = (targetRPS > 0.5) && (Math.abs(shooter.getVelocity()) > (targetRPS * 28 * 0.98));
 
         // BOOST MODE: Not ready after 6 seconds
         boolean boostMode = (targetRPS > 0.5) && !rpsReady && (rpsTimer.time() > 6.0);
@@ -175,17 +179,17 @@ public class Shooter {
             indexing = false;
         }
 
-        if (!shootCommanded) {
-            if (!ballInPosition) {
+        if (shootCommanded) {
+            if (indexing) {
+                roundUp();
+            }
+            else if (!ballInPosition) {
                 roundUp();
             } else {
                 roundStop();
             }
         } else {
-            if (indexing) {
-                roundFah();
-            }
-            else if (!ballInPosition) {
+            if (!ballInPosition) {
                 roundUp();
             } else {
                 roundStop();

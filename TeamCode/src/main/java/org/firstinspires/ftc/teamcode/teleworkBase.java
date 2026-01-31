@@ -1,22 +1,17 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit.RADIANS;
-
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.teamcode.Constants;
+
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.Mechanism.Intake;
 import org.firstinspires.ftc.teamcode.Mechanism.Shooter;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import org.firstinspires.ftc.teamcode.Constants;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
 
 
@@ -133,13 +128,13 @@ public class teleworkBase extends OpMode {
 //shooter-------------------------------------------------------------------------------------
         boolean shootHeld = gamepad1.right_bumper;
         if (shootHeld) {
-            shooter.shoot();
+            shooter.prepareShot();
             shooter.setShootCommanded(true);
         } else if (gamepad1.left_bumper) {
-            shooter.shootslow(shooter.targetRPS);
+            shooter.prepareSlowShot(shooter.targetRPS);
             shooter.setShootCommanded(true);
         } else {
-            shooter.stop();
+            shooter.setFlywheelSpeed0();
             shooter.setShootCommanded(false);
         }
 
@@ -185,7 +180,7 @@ public class teleworkBase extends OpMode {
 //        telemetry.addData("Y", "%.1f\"", goBildaPinpointDriver.getPosY(DistanceUnit.INCH));
 //        telemetry.addData("LT", gamepad1.left_trigger);
 //
-        shooter.updateVelocity();
+        shooter.update();
         telemetry.update();
 
 //        telemetry.addData("Status", "Run Time: " + runtime.toString());

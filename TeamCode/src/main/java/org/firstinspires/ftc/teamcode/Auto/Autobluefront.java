@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.Auto;
 
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -27,6 +26,7 @@ public class Autobluefront extends OpMode {
     public DcMotor frontRightDrive = null;
     public DcMotor backRightDrive = null;
     private double currentServoPos = 0.5;
+    //private boolean rpsReady = false;
 
     private int autoStep = 0;
 
@@ -55,7 +55,7 @@ public class Autobluefront extends OpMode {
     }
 
 
-    private void autoRotateToTag() {
+    /*private void autoRotateToTag() {
         if (limelight3A == null) {
             stopDrive();
             return;
@@ -83,21 +83,20 @@ public class Autobluefront extends OpMode {
         } else {
             telemetry.addData("Limelight", "No valid tag");
         }
-    }
+    }*/
 
 
 
-    private void shootslow(double distanceInches) {
-        shooter.shootslow(distanceInches);
-        shooter.setShootCommanded(true);
-    }
+
 
     private void forwardandintake(double seconds) {
         intake.spinIn();
         setDrivePower(0.5, 0.5, 0.5, 0.5);
         // You handle timing in autoStep
     }
-
+    private void intakeAuto(double seconds){
+        intake.spinIn();
+    }
     private void goforward(double seconds) {
         setDrivePower(0.5, 0.5, 0.5, 0.5);
     }
@@ -113,7 +112,9 @@ public class Autobluefront extends OpMode {
     private void turnR(double seconds) {
         setDrivePower(0.3, 0.3, -0.3, -0.3);
     }
-
+    private void moveL(double seconds){
+        setDrivePower(-0.6, 0.6, 0.6, -0.6);
+    }
     private void stopDrive() {
         setDrivePower(0, 0, 0, 0);
     }
@@ -132,22 +133,31 @@ public class Autobluefront extends OpMode {
         if (goBildaPinpointDriver != null) {
             goBildaPinpointDriver.update();
         }
-        shooter.updateVelocity();
+
 
         switch (autoStep) {
             case 0:
-                if (runtime.seconds() < 1.5) {
-                    gobackward(1.5);
+                shooter.aimRight.setPosition(0.5);
+                if (runtime.seconds() < 1.45) {
+                    gobackward(1.45);
                 } else {
                     stopDrive();
                     runtime.reset();
                     autoStep++;
                 }
                 break;
-
             case 1:
-                if (runtime.seconds() < 3.0) {
-                    autoRotateToTag();
+                if (runtime.seconds() < 0.25){
+                    moveL(0.25);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+            case 2:
+                if (runtime.seconds() < 0.05) {
+                    turnR(0.05);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -156,21 +166,27 @@ public class Autobluefront extends OpMode {
                 break;
 
 
-            case 2:
-                if (runtime.seconds() < 4) {
-                    shootslow(60);
-                    shooter.setShootCommanded(true);
+            case 3:  // 3 BALLS - WAIT FOR SPEED - Commented out for now so I don't have to worry about shooting
+                if (runtime.seconds() < 5) {
+                    shooter.prepareSlowShot(60);
+
+                    // 🔥 ONLY SHOOT WHEN READY
+//                    if (!shooter.rpsReady) {
+//                        telemetry.addData("Waiting", "Flywheel speed...");
+//                    } else {
+//                        telemetry.addData("RPS Ready", "SHOOTING!");
+//                    }
                 } else {
-                    shooter.stop();
+                    shooter.setFlywheelSpeed0();
                     shooter.setShootCommanded(false);
                     runtime.reset();
                     autoStep++;
                 }
                 break;
 
-            case 3:
-                if (runtime.seconds() < 0.495) {
-                    turnL(0.495);
+            case 4:
+                if (runtime.seconds() < 0.6) {
+                    turnL(0.6);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -178,19 +194,9 @@ public class Autobluefront extends OpMode {
                 }
                 break;
 
-            case 4:
-                if (runtime.seconds() < 1.5) {
-                    forwardandintake(1.5);
-                } else {
-                    intake.spinStop();
-                    stopDrive();
-                    runtime.reset();
-                    autoStep++;
-                }
-                break;
             case 5:
-                if (runtime.seconds() < 1.5) {
-                    gobackward(1.5);
+                if (runtime.seconds() < 0.62){
+                    moveL(0.62);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -199,26 +205,63 @@ public class Autobluefront extends OpMode {
                 break;
 
             case 6:
-                if (runtime.seconds() < 0.495) {
-                    turnR(0.495);
+                if (runtime.seconds() < 1.6) {
+                    forwardandintake(1.6);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+
+            case 7:
+                if (runtime.seconds() < .5) {
+                    intakeAuto(.5);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+
+            case 8:
+                if (runtime.seconds() < 1.6) {
+                    gobackward(1.6);
+                } else {
+                    stopDrive();
+                    runtime.reset();
+                    autoStep++;
+                }
+                break;
+
+            case 9:
+                if (runtime.seconds() < 0.5) {
+                    turnR(0.5);
                 } else {
                     stopDrive();
                     runtime.reset();
                     autoStep++;
                 }
 
-            case 7:
-                if (runtime.seconds() < 1.5) {
-                    shootslow(60);
-                    shooter.setShootCommanded(true);
+            case 10:
+                if (runtime.seconds() < 5) {
+                    shooter.prepareSlowShot(60);
+
+                    // 🔥 ONLY SHOOT WHEN READY
+//                    if (!shooter.rpsReady) {
+//                        telemetry.addData("Waiting", "Flywheel speed...");
+//                    } else {
+//                        telemetry.addData("RPS Ready", "SHOOTING!");
+//                    }
                 } else {
-                    shooter.stop();
+                    shooter.setFlywheelSpeed0();
                     shooter.setShootCommanded(false);
                     runtime.reset();
                     autoStep++;
                 }
                 break;
         }
+        shooter.update();
     }
 
         // YOUR ORIGINAL FUNCTIONS - BULLETPROOF VERSION

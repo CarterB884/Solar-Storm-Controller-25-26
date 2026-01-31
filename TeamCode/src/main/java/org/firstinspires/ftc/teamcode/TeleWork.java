@@ -1,22 +1,17 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit.RADIANS;
-
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.teamcode.Constants;
+
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.Mechanism.Intake;
 import org.firstinspires.ftc.teamcode.Mechanism.Shooter;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import org.firstinspires.ftc.teamcode.Constants;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
 
 
@@ -150,14 +145,11 @@ public class TeleWork extends OpMode {
 //shooter-------------------------------------------------------------------------------------
         boolean shootHeld = gamepad1.right_bumper;
         if (shootHeld) {
-            shooter.shoot();
-            shooter.setShootCommanded(true);
+            shooter.prepareShot();
         } else if (gamepad1.left_bumper) {
-            shooter.shootslow(shooter.targetRPS);
-            shooter.setShootCommanded(true);
+            shooter.prepareSlowShot(shooter.targetRPS);
         } else {
-            shooter.stop();
-            shooter.setShootCommanded(false);
+            shooter.setFlywheelSpeed0();
         }
 //limelight testing---------------------------------------------------------------------------------
 // AUTO SHOOTER AIM - Gamepad2 X (uses ty for distance)
@@ -170,7 +162,7 @@ public class TeleWork extends OpMode {
                 double distanceEstimate = 120 - (ty * 8);  // Tune these numbers!
 
                 shooter.updateAimFromVision(ty);
-                shooter.shootslow(distanceEstimate);  // Uses distanceEstimate
+                shooter.prepareSlowShot(distanceEstimate);  // Uses distanceEstimate
 
                 telemetry.addData("Auto Aim", "ON");
                 telemetry.addData("ty°", "%.1f", ty);
@@ -224,7 +216,7 @@ public class TeleWork extends OpMode {
 //        telemetry.addData("Y", "%.1f\"", goBildaPinpointDriver.getPosY(DistanceUnit.INCH));
 //        telemetry.addData("LT", gamepad1.left_trigger);
 //
-        shooter.updateVelocity();
+        shooter.update();
         telemetry.update();
 
 //        telemetry.addData("Status", "Run Time: " + runtime.toString());
