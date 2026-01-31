@@ -108,6 +108,13 @@ public class Shooter {
         shootCommanded = true;
     }
 
+    public void prepareVerySlowShot() {
+        targetRPS = 55;
+        shootCommanded = true;
+    }
+
+
+
 //    0.675
 
     public void shootRev() {
