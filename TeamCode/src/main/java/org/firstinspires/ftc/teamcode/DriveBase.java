@@ -31,10 +31,10 @@ public class DriveBase {
         this.goBildaPinpointDriver = goBildaPinpointDriver;
     }
 
-    double frontLeftPower;
-    double frontRightPower;
-    double backLeftPower;
-    double backRightPower;
+    double frontLeftPower = 1;
+    double frontRightPower = 1;
+    double backLeftPower = 1;
+    double backRightPower = 1;
 
     //auto rotate to april tag----------------------------------------------------------------------
 

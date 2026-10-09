@@ -181,8 +181,8 @@ public class redFront extends OpMode {
                 break;
 
             case 4:
-                if (runtime.seconds() < 0.6) {
-                    turnR(0.6);
+                if (runtime.seconds() < 0.65) {
+                    turnR(0.65);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -191,8 +191,8 @@ public class redFront extends OpMode {
                 break;
 
             case 5:
-                if (runtime.seconds() < 0.25){
-                    moveR(0.25);
+                if (runtime.seconds() < 0.29){
+                    moveR(0.29);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -231,8 +231,8 @@ public class redFront extends OpMode {
                 break;
 
             case 9:
-                if (runtime.seconds() < 0.5) {
-                    turnL(0.5);
+                if (runtime.seconds() < 0.6) {
+                    turnL(0.6);
                 } else {
                     stopDrive();
                     runtime.reset();
@@ -251,7 +251,7 @@ public class redFront extends OpMode {
                 break;
             case 11:
                 if (runtime.seconds() < 1) {
-                    moveR(1);
+                    moveR(0.8);
                 } else {
                     stopDrive();
                     runtime.reset();
