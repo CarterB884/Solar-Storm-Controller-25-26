@@ -76,8 +76,7 @@ public class teleworkBase extends OpMode {
 
                 if (Math.abs(tx) < 1.0) {
                     driveBase.autoRotate(0);
-                }
-                else {
+                } else {
                     double kP = 0.025;
                     double rotationPower = tx * kP;
                     rotationPower = Math.max(-0.35, Math.min(0.35, rotationPower));
@@ -134,4 +133,4 @@ public class teleworkBase extends OpMode {
         } else {
             shooter.setFlywheelSpeed0();
             shooter.setShootCommanded(false);
-        }
+        }}}
