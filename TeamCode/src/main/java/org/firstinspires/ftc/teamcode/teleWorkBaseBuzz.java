@@ -21,7 +21,7 @@ public class teleworkBase extends OpMode {
     private Shooter shooter = null;
     private Intake intake = null;
     public ElapsedTime runtime = new ElapsedTime();
-    public goBildaPinpointDriver = null;
+    public GoBildaPinpointDriver goBildaPinpointDriver = null;
     private double targetHeading = 0.0;  // Goal angle in degrees
     private double ROTATION_KP = 0.015;  // Tune 0.01-0.02
     private boolean autoRotateActive = false;
