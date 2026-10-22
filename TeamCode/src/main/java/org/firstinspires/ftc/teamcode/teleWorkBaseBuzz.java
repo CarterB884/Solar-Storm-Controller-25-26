@@ -12,11 +12,10 @@ import org.firstinspires.ftc.teamcode.Mechanism.Intake;
 import org.firstinspires.ftc.teamcode.Mechanism.Shooter;
 
 
-//hi im aarav and im awesome
-//hi im owen and im just ok
+
 
 @TeleOp(name="TeleWorkBase", group="Robot")
-public class teleworkBase extends OpMode {
+public class teleWorkBaseBuzz extends OpMode {
     private DriveBase driveBase = null;
     private Shooter shooter = null;
     private Intake intake = null;

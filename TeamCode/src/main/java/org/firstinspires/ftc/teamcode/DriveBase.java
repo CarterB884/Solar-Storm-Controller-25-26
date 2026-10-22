@@ -60,8 +60,8 @@ public class DriveBase {
         double botHeading = goBildaPinpointDriver.getHeading(UnnormalizedAngleUnit.RADIANS);
 
         // Rotate the movement direction counter to the bot's rotation
-        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
-        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+        double rotX = x;
+        double rotY = y;
 
         rotX = rotX * 1.1;  // Counteract imperfect strafing
 
